@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_colors.dart';
+import '../services/vault_storage_service.dart';
+import 'folder_detail_screen.dart';
 
 class VaultScreen extends StatefulWidget {
   final bool isVip;
@@ -11,42 +12,161 @@ class VaultScreen extends StatefulWidget {
 }
 
 class _VaultScreenState extends State<VaultScreen> {
-  final List<String> _mediaFiles = [];
+  Map<String, int> _fileCounts = {};
 
-  void _addMedia() async {
-    if (!widget.isVip) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Akses VIP diperlukan untuk menambah file.")));
-      return;
+  @override
+  void initState() {
+    super.initState();
+    _loadCounts();
+  }
+
+  Future<void> _loadCounts() async {
+    final counts = <String, int>{};
+    for (final type in ['image', 'video', 'document', 'audio']) {
+      counts[type] = await VaultStorageService.getFileCount(type);
     }
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _mediaFiles.add(image.name);
-      });
+    if (mounted) {
+      setState(() => _fileCounts = counts);
     }
+  }
+
+  Widget _buildFolderItem(
+      BuildContext context, String title, IconData icon, String folderType, Color accentColor) {
+    final count = _fileCounts[folderType] ?? 0;
+    return GestureDetector(
+      onTap: () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FolderDetailScreen(
+              title: title,
+              folderType: folderType,
+              isVip: widget.isVip,
+            ),
+          ),
+        );
+        // Reload counts when returning
+        _loadCounts();
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white12, width: 1),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: accentColor.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, size: 32, color: accentColor),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (count > 0) ...[
+              const SizedBox(height: 4),
+              Text(
+                '$count file',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.4),
+                  fontSize: 12,
+                ),
+              ),
+            ],
+            // Show lock icon for non-VIP
+            if (!widget.isVip) ...[
+              const SizedBox(height: 8),
+              Icon(Icons.lock_outline, size: 14, color: Colors.amber.withOpacity(0.5)),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.isVip ? "Vault VIP" : "Vault (Lihat Saja)"), backgroundColor: Colors.black),
-      backgroundColor: AppColors.background,
-      body: _mediaFiles.isEmpty 
-          ? const Center(child: Text("Vault kosong", style: TextStyle(color: Colors.white54, fontSize: 18)))
-          : ListView.builder(
-              itemCount: _mediaFiles.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  leading: const Icon(Icons.image, color: Colors.white),
-                  title: Text(_mediaFiles[index], style: const TextStyle(color: Colors.white)),
-                );
-              },
+      appBar: AppBar(
+        title: Text(widget.isVip ? "Vault VIP" : "Vault (Lihat Saja)"),
+        backgroundColor: Colors.black,
+        actions: [
+          if (!widget.isVip)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.lock, color: Colors.amber, size: 14),
+                    SizedBox(width: 4),
+                    Text(
+                      'Gratis',
+                      style: TextStyle(color: Colors.amber, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addMedia,
-        backgroundColor: Colors.amber,
-        child: const Icon(Icons.add, color: Colors.black),
+          if (widget.isVip)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.amber.withOpacity(0.5)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.star, color: Colors.amber, size: 14),
+                    SizedBox(width: 4),
+                    Text(
+                      'VIP',
+                      style: TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+      backgroundColor: AppColors.background,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          children: [
+            _buildFolderItem(context, 'Gambar', Icons.image, 'image', Colors.amber),
+            _buildFolderItem(context, 'Video', Icons.video_library, 'video', Colors.purpleAccent),
+            _buildFolderItem(context, 'Dokumen', Icons.insert_drive_file, 'document', Colors.cyanAccent),
+            _buildFolderItem(context, 'Audio', Icons.audiotrack, 'audio', Colors.greenAccent),
+          ],
+        ),
       ),
     );
   }

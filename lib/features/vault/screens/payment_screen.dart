@@ -4,29 +4,61 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
 import 'vault_screen.dart';
+import 'dart:ui';
 
 class PaymentScreen extends StatelessWidget {
   const PaymentScreen({Key? key}) : super(key: key);
 
-  final String danaNumber = "081359070793";
+  // Link DANA langsung
+  static const String _danaPaymentLink =
+      "https://link.dana.id/minta?full_url=https://qr.dana.id/v1/281012092026051530332753";
+
+  final int amount = 15000;
 
   void _payAndUnlock(BuildContext context) async {
-    // Salin nomor
-    await Clipboard.setData(ClipboardData(text: danaNumber));
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nomor DANA disalin!')));
+    final Uri danaUrl = Uri.parse(_danaPaymentLink);
 
-    // Buka DANA
-    final url = Uri.parse("dana://pay?amount=15000&note=KalkulatorVIP");
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
+    bool launched = false;
+    try {
+      // Langsung buka link DANA - akan otomatis membuka aplikasi DANA
+      launched = await launchUrl(
+        danaUrl,
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (e) {
+      debugPrint('Launch URL error: $e');
     }
 
-    // Beri akses VIP
+    if (!launched) {
+      // Coba dengan mode platform default
+      try {
+        launched = await launchUrl(
+          danaUrl,
+          mode: LaunchMode.platformDefault,
+        );
+      } catch (e) {
+        debugPrint('Fallback launch error: $e');
+      }
+    }
+
+    if (!launched && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Tidak dapat membuka DANA secara otomatis. Pastikan DANA terinstal.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+
+    // Beri akses VIP setelah tombol ditekan
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('is_vip_unlocked', true);
 
     if (context.mounted) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const VaultScreen(isVip: true)));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const VaultScreen(isVip: true)),
+      );
     }
   }
 
@@ -34,32 +66,217 @@ class PaymentScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text("Premium Access"), backgroundColor: Colors.black),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+      appBar: AppBar(
+        title: const Text("Premium Access"),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+      ),
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        children: [
+          // Background Decor (Glow effects)
+          Positioned(
+            top: -100,
+            left: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.amber.withOpacity(0.15),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -50,
+            right: -50,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.blue.withOpacity(0.1),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+          ),
+          // Content
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildPremiumCard(context),
+                  const SizedBox(height: 40),
+                  _buildDanaButton(context),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPremiumCard(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF2C2C2E).withOpacity(0.9),
+            const Color(0xFF1C1C1E).withOpacity(0.95),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: Colors.amber.withOpacity(0.1),
+            blurRadius: 30,
+            spreadRadius: -5,
+            offset: const Offset(0, -5),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.amber.withOpacity(0.3),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Icon(Icons.star, size: 80, color: Colors.amber),
-              const SizedBox(height: 20),
-              const Text("Akses Vault VIP", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.amber)),
-              const SizedBox(height: 20),
-              const Text("Harga: Rp 15.000", style: TextStyle(fontSize: 20)),
-              const SizedBox(height: 10),
-              Text("Kirim DANA ke: $danaNumber", style: const TextStyle(fontSize: 18, color: Colors.white70)),
-              const SizedBox(height: 40),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))
+              const Icon(Icons.shield, color: Colors.amber, size: 36),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.amber.withOpacity(0.5)),
                 ),
-                onPressed: () => _payAndUnlock(context),
-                child: const Text("Bayar dengan DANA", style: TextStyle(fontSize: 18, color: Colors.white)),
-              )
+                child: const Text(
+                  "VVIP STATUS",
+                  style: TextStyle(
+                    color: Colors.amber,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
             ],
           ),
+          const SizedBox(height: 30),
+          const Text(
+            "Akses Vault VIP",
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            "Buka fitur tersembunyi tanpa batas. Amankan foto, video, dokumen, dan audio pribadi Anda.",
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white.withOpacity(0.7),
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 30),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              const Text(
+                "Rp",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.amber,
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Text(
+                "15.000",
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "/ selamanya",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white.withOpacity(0.5),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDanaButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _payAndUnlock(context),
+      child: Container(
+        width: double.infinity,
+        height: 60,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF118EEA), Color(0xFF0F75C1)], // Warna khas DANA
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF118EEA).withOpacity(0.4),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.payment, color: Colors.white, size: 24),
+            SizedBox(width: 12),
+            Text(
+              "Bayar Sekarang dengan DANA",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
         ),
       ),
     );
