@@ -340,25 +340,47 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
           return GestureDetector(
             onTap: () => _viewImage(file),
             onLongPress: widget.isVip ? () => _deleteFile(index) : null,
-            child: Hero(
-              tag: 'image_$index',
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white10, width: 0.5),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.memory(
-                    bytes,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: Colors.grey[900],
-                      child: const Icon(Icons.broken_image, color: Colors.white38),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Hero(
+                  tag: 'image_$index',
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.white10, width: 0.5),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.memory(
+                        bytes,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: Colors.grey[900],
+                          child: const Icon(Icons.broken_image, color: Colors.white38),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
+                if (widget.isVip)
+                  Positioned(
+                    top: 2,
+                    right: 2,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20),
+                        padding: const EdgeInsets.all(4),
+                        constraints: const BoxConstraints(),
+                        onPressed: () => _deleteFile(index),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           );
         },

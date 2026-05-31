@@ -20,9 +20,13 @@ class CalculatorScreen extends StatelessWidget {
             children: [
               const NavbarTop(),
               Expanded(
+                flex: 4,
                 child: const DisplayWidget(),
               ),
-              const KeypadWidget(),
+              Expanded(
+                flex: 6,
+                child: const KeypadWidget(),
+              ),
             ],
           ),
         ),
