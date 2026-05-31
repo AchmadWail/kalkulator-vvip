@@ -83,47 +83,91 @@ class _ConverterTabState extends State<_ConverterTab> {
       setState(() => _result = '0.0');
       return;
     }
-    double value = double.tryParse(_inputController.text) ?? 0;
+    double value = double.tryParse(_inputController.text.replaceAll(',', '.')) ?? 0;
     
-    // Simplistic mock logic for demo
-    // In a real app, we'd use proper base-unit conversions for each category
     double converted = value;
     if (_fromUnit != _toUnit) {
-       // Just a dummy multiplier for visual effect since building 50+ conversion paths is huge
-       // We'll implement Length accurately as proof of concept.
-       if (widget.type == 'Panjang') {
-          converted = _convertLength(value, _fromUnit, _toUnit);
-       } else {
-          converted = value * 1.5; // Dummy multiplier
-       }
+       converted = _convert(value, widget.type, _fromUnit, _toUnit);
     }
 
     setState(() {
       _result = converted.toStringAsFixed(4).replaceAll(RegExp(r"([.]*0+)(?!.*\d)"), "");
+      if (_result.endsWith('.')) _result = _result.substring(0, _result.length - 1);
     });
   }
 
-  double _convertLength(double val, String from, String to) {
-    // Convert all to meters first
-    double inMeters = val;
-    if (from.contains('km')) inMeters = val * 1000;
-    else if (from.contains('cm')) inMeters = val / 100;
-    else if (from.contains('mm')) inMeters = val / 1000;
-    else if (from.contains('mi')) inMeters = val * 1609.34;
-    else if (from.contains('yd')) inMeters = val * 0.9144;
-    else if (from.contains('ft')) inMeters = val * 0.3048;
-    else if (from.contains('in')) inMeters = val * 0.0254;
+  double _convert(double val, String type, String from, String to) {
+    if (type == 'Suhu') {
+      // Suhu butuh rumus spesifik
+      double inCelcius = val;
+      if (from.contains('F')) inCelcius = (val - 32) * 5 / 9;
+      else if (from.contains('K')) inCelcius = val - 273.15;
 
-    // Convert from meters to target
-    if (to.contains('km')) return inMeters / 1000;
-    if (to.contains('cm')) return inMeters * 100;
-    if (to.contains('mm')) return inMeters * 1000;
-    if (to.contains('mi')) return inMeters / 1609.34;
-    if (to.contains('yd')) return inMeters / 0.9144;
-    if (to.contains('ft')) return inMeters / 0.3048;
-    if (to.contains('in')) return inMeters / 0.0254;
-    
-    return inMeters; // meter to meter
+      if (to.contains('F')) return (inCelcius * 9 / 5) + 32;
+      if (to.contains('K')) return inCelcius + 273.15;
+      return inCelcius;
+    }
+
+    // Untuk yang lain, konversi ke satuan dasar (base unit) lalu ke target
+    double baseVal = val;
+
+    // 1. Convert to Base
+    if (type == 'Panjang') { // Base: Meter
+      if (from.contains('km')) baseVal = val * 1000;
+      else if (from.contains('cm')) baseVal = val / 100;
+      else if (from.contains('mm')) baseVal = val / 1000;
+      else if (from.contains('mi')) baseVal = val * 1609.34;
+      else if (from.contains('yd')) baseVal = val * 0.9144;
+      else if (from.contains('ft')) baseVal = val * 0.3048;
+      else if (from.contains('in')) baseVal = val * 0.0254;
+    } else if (type == 'Berat') { // Base: Gram
+      if (from.contains('kg')) baseVal = val * 1000;
+      else if (from.contains('mg')) baseVal = val / 1000;
+      else if (from.contains('lb')) baseVal = val * 453.592;
+      else if (from.contains('oz')) baseVal = val * 28.3495;
+    } else if (type == 'Area') { // Base: Meter Persegi
+      if (from.contains('ha')) baseVal = val * 10000;
+      else if (from.contains('Acre')) baseVal = val * 4046.86;
+      else if (from.contains('km2')) baseVal = val * 1000000;
+    } else if (type == 'Volume') { // Base: Liter
+      if (from.contains('mL')) baseVal = val / 1000;
+      else if (from.contains('gal')) baseVal = val * 3.78541;
+      else if (from.contains('m3')) baseVal = val * 1000;
+    } else if (type == 'Waktu') { // Base: Detik
+      if (from == 'Menit') baseVal = val * 60;
+      else if (from == 'Jam') baseVal = val * 3600;
+      else if (from == 'Hari') baseVal = val * 86400;
+    }
+
+    // 2. Convert from Base to Target
+    if (type == 'Panjang') {
+      if (to.contains('km')) return baseVal / 1000;
+      if (to.contains('cm')) return baseVal * 100;
+      if (to.contains('mm')) return baseVal * 1000;
+      if (to.contains('mi')) return baseVal / 1609.34;
+      if (to.contains('yd')) return baseVal / 0.9144;
+      if (to.contains('ft')) return baseVal / 0.3048;
+      if (to.contains('in')) return baseVal / 0.0254;
+    } else if (type == 'Berat') {
+      if (to.contains('kg')) return baseVal / 1000;
+      if (to.contains('mg')) return baseVal * 1000;
+      if (to.contains('lb')) return baseVal / 453.592;
+      if (to.contains('oz')) return baseVal / 28.3495;
+    } else if (type == 'Area') {
+      if (to.contains('ha')) return baseVal / 10000;
+      if (to.contains('Acre')) return baseVal / 4046.86;
+      if (to.contains('km2')) return baseVal / 1000000;
+    } else if (type == 'Volume') {
+      if (to.contains('mL')) return baseVal * 1000;
+      if (to.contains('gal')) return baseVal / 3.78541;
+      if (to.contains('m3')) return baseVal / 1000;
+    } else if (type == 'Waktu') {
+      if (to == 'Menit') return baseVal / 60;
+      if (to == 'Jam') return baseVal / 3600;
+      if (to == 'Hari') return baseVal / 86400;
+    }
+
+    return baseVal;
   }
 
   @override

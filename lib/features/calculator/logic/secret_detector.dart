@@ -38,7 +38,7 @@ class SecretDetector {
     if (!context.mounted) return;
 
     if (freeMode || isVip) {
-       Navigator.push(context, MaterialPageRoute(builder: (_) => const VaultScreen()));
+       Navigator.push(context, MaterialPageRoute(builder: (_) => VaultScreen(isFreeMode: freeMode && !isVip)));
     } else {
        Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentScreen()));
     }

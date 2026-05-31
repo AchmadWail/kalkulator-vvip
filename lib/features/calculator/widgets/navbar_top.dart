@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../converters/screens/unit_converter_screen.dart';
-import '../../converters/screens/currency_converter_screen.dart';
+import '../../unit_converter/screens/unit_screen.dart';
+import '../../currency_converter/screens/currency_screen.dart';
+import '../../history/screens/history_screen.dart';
 
 class NavbarTop extends StatelessWidget {
   const NavbarTop({Key? key}) : super(key: key);
@@ -61,9 +62,9 @@ class NavbarTop extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildNavIcon(context, 'assets/icons/icon_clock.png', 'Riwayat Kalkulator', iconSize),
-                _buildNavIcon(context, 'assets/icons/icon_dollar.png', 'Konverter Mata Uang', iconSize, navigateTo: const CurrencyConverterScreen()),
-                _buildNavIcon(context, 'assets/icons/icon_ruler.png', 'Konverter Satuan', iconSize, navigateTo: const UnitConverterScreen()),
+                _buildNavIcon(context, 'assets/icons/icon_clock.png', 'Riwayat Kalkulator', iconSize, navigateTo: const HistoryScreen()),
+                _buildNavIcon(context, 'assets/icons/icon_dollar.png', 'Konverter Mata Uang', iconSize, navigateTo: const CurrencyScreen()),
+                _buildNavIcon(context, 'assets/icons/icon_ruler.png', 'Konverter Satuan', iconSize, navigateTo: const UnitScreen()),
               ],
             ),
           )

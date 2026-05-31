@@ -8,6 +8,7 @@ class CalculatorProvider with ChangeNotifier {
 
   String get displayValue => _logic.expression;
   String get previewValue => _logic.previewResult;
+  List<String> get history => _logic.history;
 
   void onButtonPress(String buttonText, BuildContext context) {
     // Intercept input for secret codes
