@@ -7,7 +7,7 @@ import '../widgets/navbar_top.dart';
 import '../../../core/theme/app_colors.dart';
 
 class CalculatorScreen extends StatelessWidget {
-  const CalculatorScreen({Key? key}) : super(key: key);
+  CalculatorScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,14 +18,14 @@ class CalculatorScreen extends StatelessWidget {
         body: SafeArea(
           child: Column(
             children: [
-              const NavbarTop(),
+              NavbarTop(),
               Expanded(
                 flex: 4,
-                child: const DisplayWidget(),
+                child: DisplayWidget(),
               ),
               Expanded(
                 flex: 6,
-                child: const KeypadWidget(),
+                child: KeypadWidget(),
               ),
             ],
           ),

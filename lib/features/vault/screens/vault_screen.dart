@@ -5,7 +5,7 @@ import 'folder_detail_screen.dart';
 
 class VaultScreen extends StatefulWidget {
   final bool isVip;
-  const VaultScreen({Key? key, this.isVip = false}) : super(key: key);
+  VaultScreen({Key? key, this.isVip = false}) : super(key: key);
 
   @override
   State<VaultScreen> createState() => _VaultScreenState();
@@ -52,7 +52,7 @@ class _VaultScreenState extends State<VaultScreen> {
         decoration: BoxDecoration(
           color: Colors.grey[900],
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white12, width: 1),
+          border: Border.all(color: AppColors.numberText.withOpacity(0.12), width: 1),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -66,28 +66,28 @@ class _VaultScreenState extends State<VaultScreen> {
               ),
               child: Icon(icon, size: 32, color: accentColor),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Text(
               title,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: AppColors.numberText,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),
             if (count > 0) ...[
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
                 '$count file',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
+                  color: AppColors.numberText.withOpacity(0.4),
                   fontSize: 12,
                 ),
               ),
             ],
             // Show lock icon for non-VIP
             if (!widget.isVip) ...[
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Icon(Icons.lock_outline, size: 14, color: Colors.amber.withOpacity(0.5)),
             ],
           ],
@@ -101,14 +101,14 @@ class _VaultScreenState extends State<VaultScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isVip ? "Vault VIP" : "Vault (Lihat Saja)"),
-        backgroundColor: Colors.black,
+        backgroundColor: AppColors.background,
         actions: [
           if (!widget.isVip)
             Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: EdgeInsets.only(right: 8),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                margin: const EdgeInsets.symmetric(vertical: 12),
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                margin: EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: Colors.amber.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(12),
@@ -116,7 +116,7 @@ class _VaultScreenState extends State<VaultScreen> {
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     Icon(Icons.lock, color: Colors.amber, size: 14),
                     SizedBox(width: 4),
                     Text(
@@ -129,10 +129,10 @@ class _VaultScreenState extends State<VaultScreen> {
             ),
           if (widget.isVip)
             Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: EdgeInsets.only(right: 8),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                margin: const EdgeInsets.symmetric(vertical: 12),
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                margin: EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: Colors.amber.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
@@ -140,7 +140,7 @@ class _VaultScreenState extends State<VaultScreen> {
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     Icon(Icons.star, color: Colors.amber, size: 14),
                     SizedBox(width: 4),
                     Text(
@@ -155,7 +155,7 @@ class _VaultScreenState extends State<VaultScreen> {
       ),
       backgroundColor: AppColors.background,
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16.0),
         child: GridView.count(
           crossAxisCount: 2,
           crossAxisSpacing: 16,

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 
 class UnitConverterScreen extends StatefulWidget {
-  const UnitConverterScreen({Key? key}) : super(key: key);
+  UnitConverterScreen({Key? key}) : super(key: key);
 
   @override
   State<UnitConverterScreen> createState() => _UnitConverterScreenState();
@@ -114,20 +114,20 @@ class _UnitConverterScreenState extends State<UnitConverterScreen> {
     final currentUnits = _unitsByCategory[_selectedCategory]!;
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text("Konverter Satuan", style: TextStyle(color: Colors.white)), backgroundColor: Colors.black, iconTheme: const IconThemeData(color: Colors.white)),
+      appBar: AppBar(title: Text("Konverter Satuan", style: TextStyle(color: AppColors.numberText)), backgroundColor: AppColors.background, iconTheme: IconThemeData(color: AppColors.numberText)),
       body: Column(
         children: [
           // Custom TabBar
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
               children: _categories.map((cat) {
                 final isSelected = cat == _selectedCategory;
                 return Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
+                  padding: EdgeInsets.only(right: 8.0),
                   child: ChoiceChip(
-                    label: Text(cat, style: TextStyle(color: isSelected ? Colors.black : Colors.white)),
+                    label: Text(cat, style: TextStyle(color: isSelected ? AppColors.equalsText : AppColors.numberText)),
                     selected: isSelected,
                     selectedColor: AppColors.equalsButton,
                     backgroundColor: AppColors.operatorButton,
@@ -140,27 +140,27 @@ class _UnitConverterScreenState extends State<UnitConverterScreen> {
           
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(24.0),
               child: Column(
                 children: [
                   TextField(
                     controller: _inputController,
                     keyboardType: TextInputType.number,
-                    style: const TextStyle(color: Colors.white, fontSize: 32),
-                    decoration: const InputDecoration(
+                    style: TextStyle(color: AppColors.numberText, fontSize: 32),
+                    decoration: InputDecoration(
                       labelText: "Jumlah", 
                       labelStyle: TextStyle(color: AppColors.previewText),
                       enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.operatorButton)),
                       focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.equalsButton)),
                     ),
                   ),
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: EdgeInsets.symmetric(horizontal: 16),
                           decoration: BoxDecoration(
                             color: AppColors.numberButton,
                             borderRadius: BorderRadius.circular(16)
@@ -170,7 +170,7 @@ class _UnitConverterScreenState extends State<UnitConverterScreen> {
                               isExpanded: true,
                               value: _fromUnit,
                               dropdownColor: AppColors.numberButton,
-                              style: const TextStyle(color: Colors.white, fontSize: 14),
+                              style: TextStyle(color: AppColors.numberText, fontSize: 14),
                               items: currentUnits.map((u) => DropdownMenuItem(value: u, child: Text(u, overflow: TextOverflow.ellipsis))).toList(),
                               onChanged: (v) {
                                 setState(() => _fromUnit = v!);
@@ -180,13 +180,13 @@ class _UnitConverterScreenState extends State<UnitConverterScreen> {
                           ),
                         ),
                       ),
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.0),
                         child: Icon(Icons.swap_horiz, color: AppColors.navbarIcon, size: 32),
                       ),
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: EdgeInsets.symmetric(horizontal: 16),
                           decoration: BoxDecoration(
                             color: AppColors.numberButton,
                             borderRadius: BorderRadius.circular(16)
@@ -196,7 +196,7 @@ class _UnitConverterScreenState extends State<UnitConverterScreen> {
                               isExpanded: true,
                               value: _toUnit,
                               dropdownColor: AppColors.numberButton,
-                              style: const TextStyle(color: Colors.white, fontSize: 14),
+                              style: TextStyle(color: AppColors.numberText, fontSize: 14),
                               items: currentUnits.map((u) => DropdownMenuItem(value: u, child: Text(u, overflow: TextOverflow.ellipsis))).toList(),
                               onChanged: (v) {
                                 setState(() => _toUnit = v!);
@@ -208,14 +208,14 @@ class _UnitConverterScreenState extends State<UnitConverterScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 60),
-                  const Text("Hasil Konversi:", style: TextStyle(color: AppColors.previewText, fontSize: 16)),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 60),
+                  Text("Hasil Konversi:", style: TextStyle(color: AppColors.previewText, fontSize: 16)),
+                  SizedBox(height: 8),
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
                       "$_result $_toUnit", 
-                      style: const TextStyle(color: AppColors.equalsButton, fontSize: 48, fontWeight: FontWeight.bold)
+                      style: TextStyle(color: AppColors.equalsButton, fontSize: 48, fontWeight: FontWeight.bold)
                     ),
                   ),
                 ],

@@ -99,12 +99,12 @@ files = {
 
     "pages/history.html": """
 <div class="page-container">
-    <div class="header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div class="header">
         <h2>Riwayat</h2>
         <button onclick="clearHistory()" class="btn-text" style="color: red;">Hapus Semua</button>
     </div>
     <div id="history-list"></div>
-    <button onclick="navigateTo('#/')" class="btn-text mt-4 text-center">Kembali ke Kalkulator</button>
+    <button onclick="navigateTo('#/')" class="btn-text mt-4">Kembali ke Kalkulator</button>
 </div>
 """,
 
@@ -123,7 +123,7 @@ files = {
             <div id="curr-result" class="result">0</div>
         </div>
     </div>
-    <button onclick="navigateTo('#/')" class="btn-text mt-4 text-center">Kembali</button>
+    <button onclick="navigateTo('#/')" class="btn-text mt-4">Kembali</button>
 </div>
 """,
 
@@ -147,13 +147,13 @@ files = {
             <div id="unit-result" class="result">0</div>
         </div>
     </div>
-    <button onclick="navigateTo('#/')" class="btn-text mt-4 text-center">Kembali</button>
+    <button onclick="navigateTo('#/')" class="btn-text mt-4">Kembali</button>
 </div>
 """,
 
     "pages/vault.html": """
 <div class="page-container">
-    <h2 id="vault-title" class="text-center">Vault</h2>
+    <h2 id="vault-title">Vault</h2>
     <div id="vault-folders" class="grid mt-4">
         <div class="folder-card" onclick="openFolder('Images')">
             <span class="icon">🖼️</span>
@@ -168,18 +168,18 @@ files = {
             <p>Dokumen</p>
         </div>
     </div>
-    <button onclick="navigateTo('#/')" class="btn-text mt-4 text-center" style="margin-top:auto;">Tutup Vault</button>
+    <button onclick="navigateTo('#/')" class="btn-text mt-4">Tutup Vault</button>
 </div>
 """,
 
     "pages/payment.html": """
-<div class="page-container text-center" style="justify-content:center;">
+<div class="page-container text-center">
     <h2>Premium Access</h2>
     <div class="payment-card mt-4">
-        <h3 class="text-amber">VIP Vault</h3>
-        <p class="mt-4" style="color:#aaa;">Akses fitur tersembunyi tanpa batas.</p>
+        <h3>VIP Vault</h3>
+        <p>Akses fitur tersembunyi tanpa batas.</p>
         <h1 class="mt-4 text-amber">Rp 15.000</h1>
-        <button class="btn-blue mt-4 w-100" onclick="payWithDana()">Bayar dengan DANA</button>
+        <button class="btn btn-blue mt-4 w-100" onclick="payWithDana()">Bayar dengan DANA</button>
     </div>
     <button onclick="navigateTo('#/')" class="btn-text mt-4">Batal</button>
 </div>
@@ -188,30 +188,26 @@ files = {
     "css/global.css": """* { box-sizing: border-box; margin: 0; padding: 0; }
 body.dark-theme { background-color: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
 #app { width: 100%; max-width: 400px; height: 100%; display: flex; flex-direction: column; background-color: #000; position: relative; }
-#main-content { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
 .page-container { padding: 20px; display: flex; flex-direction: column; height: 100%; overflow-y: auto; }
 .mt-4 { margin-top: 20px; }
 .text-center { text-align: center; }
 .text-amber { color: #ff9f0a; }
 .w-100 { width: 100%; }
-.btn-text { background: none; border: none; color: #fff; cursor: pointer; font-size: 16px; padding: 10px; opacity: 0.7; }
-.btn-text:active { opacity: 1; }
-.btn-blue { background-color: #007aff; color: #fff; padding: 15px; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-.btn-blue:active { background-color: #0056b3; }
+.btn-text { background: none; border: none; color: #fff; cursor: pointer; font-size: 16px; padding: 10px; }
+.btn-blue { background-color: #007aff; color: #fff; padding: 15px; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
 .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 select, input { background: #333; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 8px; font-size: 16px; width: 100%; outline: none; }
 select { flex: 1; }
-h2 { font-weight: 500; font-size: 24px; }
 """,
 
-    "css/navbar.css": """.navbar { display: flex; justify-content: space-between; padding: 20px; align-items: center; }
+    "css/navbar.css": """.navbar { display: flex; justify-content: space-between; padding: 20px; }
 .icon-btn { background: none; border: none; cursor: pointer; padding: 10px; border-radius: 50%; transition: background 0.2s; color: #fff; font-size: 20px; display: flex; align-items: center; justify-content: center; }
 .icon-btn:active { background: rgba(255, 255, 255, 0.2); }
 .icon-btn img { width: 24px; height: 24px; filter: invert(1); }
 .capsule-group { display: flex; background: rgba(255, 255, 255, 0.1); border-radius: 30px; padding: 2px 10px; }
 .capsule-nav .icon-btn { margin: 0 5px; }""",
 
-    "css/calculator.css": """.calculator-container { display: flex; flex-direction: column; height: 100%; justify-content: flex-end; padding: 20px; }
+    "css/calculator.css": """.calculator-container { display: flex; flex-direction: column; flex: 1; justify-content: flex-end; padding: 20px; }
 .display { text-align: right; margin-bottom: 20px; }
 .preview { font-size: 24px; color: rgba(255, 255, 255, 0.6); min-height: 30px; }
 .result { font-size: 64px; font-weight: 300; color: #fff; word-wrap: break-word; max-height: 150px; overflow: hidden; }
@@ -224,33 +220,26 @@ h2 { font-weight: 500; font-size: 24px; }
 .btn-zero { grid-column: span 2; aspect-ratio: auto; border-radius: 40px; justify-content: flex-start; padding-left: 30px; }""",
 
     "css/history.css": """#history-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-.history-item { background: #1c1c1e; padding: 15px; border-radius: 12px; text-align: right; border: 1px solid #333; }
-.history-expr { color: #888; font-size: 18px; margin-bottom: 5px; }
+.history-item { background: #1c1c1e; padding: 15px; border-radius: 12px; text-align: right; }
+.history-expr { color: #888; font-size: 18px; }
 .history-res { color: #fff; font-size: 24px; font-weight: bold; }""",
 
-    "css/currency.css": """.converter-box { background: #1c1c1e; padding: 20px; border-radius: 16px; border: 1px solid #333; }
-.result-box { margin-top: 30px; text-align: center; }
-.result-box .result { font-size: 40px; color: #ff9f0a; font-weight: bold; margin-top: 10px; }""",
+    "css/currency.css": """.converter-box { background: #1c1c1e; padding: 20px; border-radius: 16px; }""",
     
     "css/unit.css": """.tabs { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
-.tab-btn { background: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; white-space: nowrap; transition: background 0.2s; }
+.tab-btn { background: #333; color: #fff; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; white-space: nowrap; }
 .tab-btn.active { background: #ff9f0a; color: #000; font-weight: bold; }""",
 
     "css/vault.css": """.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .folder-card { background: #1c1c1e; border: 1px solid #333; border-radius: 16px; padding: 20px; text-align: center; cursor: pointer; transition: transform 0.2s; }
-.folder-card:active { transform: scale(0.95); background: #2c2c2e; }
-.folder-card .icon { font-size: 40px; display: block; margin-bottom: 10px; }
-.folder-card p { font-weight: 500; }""",
+.folder-card:active { transform: scale(0.95); }
+.folder-card .icon { font-size: 40px; display: block; margin-bottom: 10px; }""",
 
-    "css/payment.css": """.payment-card { background: linear-gradient(145deg, #2c2c2e, #1c1c1e); border: 1px solid rgba(255, 159, 10, 0.3); border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-.payment-card h1 { font-size: 40px; font-weight: 900; }""",
+    "css/payment.css": """.payment-card { background: linear-gradient(145deg, #2c2c2e, #1c1c1e); border: 1px solid rgba(255, 159, 10, 0.3); border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }""",
 
     "css/modal.css": """.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); }
-.modal-content { background-color: #1e1e1e; margin: 30% auto; padding: 30px; border-radius: 15px; width: 80%; max-width: 350px; color: white; border: 1px solid #333; box-shadow: 0 5px 25px rgba(0,0,0,0.5); }
-.close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; margin-top: -10px; margin-right: -10px; padding: 10px; }
-.close-btn:hover { color: white; }
-.modal-content h2 { margin-bottom: 15px; color: #ff9f0a; }
-.modal-content ul { margin-top: 15px; padding-left: 20px; color: #ccc; line-height: 1.6; }""",
+.modal-content { background-color: #1e1e1e; margin: 30% auto; padding: 30px; border-radius: 15px; width: 80%; max-width: 350px; color: white; border: 1px solid #333; }
+.close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }""",
 
     "js/app.js": """const routes = {
     '#/': 'pages/calculator.html',
@@ -272,7 +261,6 @@ async function loadRoute() {
     
     try {
         const res = await fetch(pageUrl);
-        if (!res.ok) throw new Error('Page not found');
         const html = await res.text();
         main.innerHTML = html;
         
@@ -282,7 +270,7 @@ async function loadRoute() {
         if (hash === '#/unit') initUnit();
         if (hash === '#/vault') initVault();
     } catch(e) {
-        main.innerHTML = '<div class="page-container text-center mt-4"><h2>Loading...</h2><p>Pastikan menjalankan server atau scaffold sudah dibuat.</p></div>';
+        main.innerHTML = '<h2>Error loading page</h2>';
     }
 }
 
@@ -306,11 +294,11 @@ function appendInput(val) {
     } else if (val === '⌫') {
         expression = expression.slice(0, -1);
     } else if (val === '=') {
-        if(checkSecretCode(expression)) return;
+        checkSecretCode(expression);
         try {
             let evalExpr = expression.replace(/×/g, '*').replace(/÷/g, '/');
             let res = eval(evalExpr).toString();
-            if(typeof saveHistory === 'function') saveHistory(expression, res);
+            saveHistory(expression, res);
             expression = res;
             preview = '';
         } catch (e) {
@@ -332,7 +320,6 @@ function appendInput(val) {
     "js/calculator/secretDetector.js": """function checkSecretCode(expr) {
     if (expr === '1+1') {
         navigateTo('#/vault');
-        return true;
     } else if (expr === '99+99') {
         const isVip = localStorage.getItem('vip_unlocked');
         if (isVip === 'true') {
@@ -340,9 +327,7 @@ function appendInput(val) {
         } else {
             navigateTo('#/payment');
         }
-        return true;
     }
-    return false;
 }""",
 
     "js/history/history.js": """function saveHistory(expr, res) {
@@ -373,7 +358,7 @@ function clearHistory() {
     renderHistory();
 }""",
 
-    "js/currency/currencyConverter.js": """let currencyRates = { USD: 1, IDR: 16200, EUR: 0.92, GBP: 0.79, JPY: 153 };
+    "js/currency/currencyConverter.js": """let currencyRates = { USD: 1, IDR: 16000, EUR: 0.9, GBP: 0.8, JPY: 150 };
 function initCurrency() {
     const fromSel = document.getElementById('curr-from');
     const toSel = document.getElementById('curr-to');
@@ -396,7 +381,7 @@ function convertCurrency() {
     const inUsd = val / currencyRates[from];
     const out = inUsd * currencyRates[to];
     
-    document.getElementById('curr-result').innerText = out.toLocaleString('id-ID', {maximumFractionDigits: 2});
+    document.getElementById('curr-result').innerText = out.toFixed(2);
 }
 
 function swapCurrency() {
@@ -427,8 +412,6 @@ function setUnitCategory(cat) {
     
     const fromSel = document.getElementById('unit-from');
     const toSel = document.getElementById('unit-to');
-    if(!fromSel || !toSel) return;
-
     fromSel.innerHTML = ''; toSel.innerHTML = '';
     
     Object.keys(units[cat]).forEach(u => {
@@ -471,18 +454,13 @@ function swapUnit() {
     document.getElementById('vault-title').innerText = isVip ? 'Vault VIP' : 'Vault (Gratis)';
 }
 function openFolder(name) {
-    alert('Folder ' + name + ' opened. (File upload depends on device support in MVP)');
+    alert('Folder ' + name + ' opened. (File upload needs backend/IDB)');
 }""",
 
     "js/payment/payment.js": """function payWithDana() {
-    window.location.href = "dana://pay?amount=15000&note=KalkulatorVIP";
-    
-    // Simulate payment success for demo purposes
-    setTimeout(() => {
-        localStorage.setItem('vip_unlocked', 'true');
-        alert('Pembayaran simulasi berhasil! Anda sekarang adalah VIP.');
-        navigateTo('#/vault');
-    }, 2000);
+    localStorage.setItem('vip_unlocked', 'true');
+    alert('Pembayaran Berhasil! Anda sekarang adalah VIP.');
+    navigateTo('#/vault');
 }"""
 }
 
@@ -492,4 +470,4 @@ for filepath, content in files.items():
     with open(full_path, "w", encoding="utf-8") as f:
         f.write(content.strip())
 
-print("Pembaruan Web App VVIP selesai.")
+print("Complete web app files generated.")

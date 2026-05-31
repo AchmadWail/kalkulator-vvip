@@ -40,7 +40,7 @@ class SecretDetector {
     if (freeMode || isVip) {
        Navigator.push(context, MaterialPageRoute(builder: (_) => VaultScreen(isVip: isVip)));
     } else {
-       Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentScreen()));
+       Navigator.push(context, MaterialPageRoute(builder: (_) => PaymentScreen()));
     }
   }
 }

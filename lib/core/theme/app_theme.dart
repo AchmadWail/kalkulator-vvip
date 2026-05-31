@@ -7,11 +7,11 @@ class AppTheme {
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.background,
       fontFamily: 'Inter', // Default clean font
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.background,
         elevation: 0,
       ),
-      iconTheme: const IconThemeData(
+      iconTheme: IconThemeData(
         color: AppColors.navbarIcon,
       ),
     );

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 
 class UnitScreen extends StatefulWidget {
-  const UnitScreen({Key? key}) : super(key: key);
+  UnitScreen({Key? key}) : super(key: key);
 
   @override
   State<UnitScreen> createState() => _UnitScreenState();
@@ -22,16 +22,16 @@ class _UnitScreenState extends State<UnitScreen> with SingleTickerProviderStateM
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Konverter Satuan', style: TextStyle(color: Colors.white)),
+        title: Text('Konverter Satuan', style: TextStyle(color: AppColors.numberText)),
         backgroundColor: AppColors.navCapsule,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: AppColors.numberText),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
           indicatorColor: AppColors.equalsButton,
           labelColor: AppColors.equalsButton,
-          unselectedLabelColor: Colors.white60,
-          tabs: const [
+          unselectedLabelColor: AppColors.numberText.withOpacity(0.60),
+          tabs: [
             Tab(text: 'Panjang'),
             Tab(text: 'Berat'),
             Tab(text: 'Suhu'),
@@ -44,12 +44,12 @@ class _UnitScreenState extends State<UnitScreen> with SingleTickerProviderStateM
       body: TabBarView(
         controller: _tabController,
         children: [
-          _ConverterTab(type: 'Panjang', units: const ['Meter (m)', 'Kilometer (km)', 'Sentimeter (cm)', 'Milimeter (mm)', 'Mil (mi)', 'Yard (yd)', 'Kaki (ft)', 'Inci (in)']),
-          _ConverterTab(type: 'Berat', units: const ['Kilogram (kg)', 'Gram (g)', 'Miligram (mg)', 'Pound (lb)', 'Ounce (oz)']),
-          _ConverterTab(type: 'Suhu', units: const ['Celcius (C)', 'Fahrenheit (F)', 'Kelvin (K)']),
-          _ConverterTab(type: 'Area', units: const ['Meter Persegi (m2)', 'Hektar (ha)', 'Acre', 'Kilometer Persegi (km2)']),
-          _ConverterTab(type: 'Volume', units: const ['Liter (L)', 'Mililiter (mL)', 'Galon (gal)', 'Meter Kubik (m3)']),
-          _ConverterTab(type: 'Waktu', units: const ['Detik', 'Menit', 'Jam', 'Hari']),
+          _ConverterTab(type: 'Panjang', units: ['Meter (m)', 'Kilometer (km)', 'Sentimeter (cm)', 'Milimeter (mm)', 'Mil (mi)', 'Yard (yd)', 'Kaki (ft)', 'Inci (in)']),
+          _ConverterTab(type: 'Berat', units: ['Kilogram (kg)', 'Gram (g)', 'Miligram (mg)', 'Pound (lb)', 'Ounce (oz)']),
+          _ConverterTab(type: 'Suhu', units: ['Celcius (C)', 'Fahrenheit (F)', 'Kelvin (K)']),
+          _ConverterTab(type: 'Area', units: ['Meter Persegi (m2)', 'Hektar (ha)', 'Acre', 'Kilometer Persegi (km2)']),
+          _ConverterTab(type: 'Volume', units: ['Liter (L)', 'Mililiter (mL)', 'Galon (gal)', 'Meter Kubik (m3)']),
+          _ConverterTab(type: 'Waktu', units: ['Detik', 'Menit', 'Jam', 'Hari']),
         ],
       ),
     );
@@ -173,37 +173,37 @@ class _ConverterTabState extends State<_ConverterTab> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: EdgeInsets.all(24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextField(
             controller: _inputController,
             keyboardType: TextInputType.number,
-            style: const TextStyle(color: Colors.white, fontSize: 32),
+            style: TextStyle(color: AppColors.numberText, fontSize: 32),
             onChanged: (v) => _calculate(),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Masukkan Nilai',
-              labelStyle: TextStyle(color: Colors.white54),
-              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
+              labelStyle: TextStyle(color: AppColors.numberText.withOpacity(0.54)),
+              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.numberText.withOpacity(0.24))),
               focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.equalsButton)),
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildDropdown(true),
-              const Icon(Icons.arrow_forward, color: Colors.white54),
+              Icon(Icons.arrow_forward, color: AppColors.numberText.withOpacity(0.54)),
               _buildDropdown(false),
             ],
           ),
-          const SizedBox(height: 48),
-          const Text('Hasil:', style: TextStyle(color: Colors.white54, fontSize: 18)),
-          const SizedBox(height: 8),
+          SizedBox(height: 48),
+          Text('Hasil:', style: TextStyle(color: AppColors.numberText.withOpacity(0.54), fontSize: 18)),
+          SizedBox(height: 8),
           Text(
             '$_result $_toUnit',
-            style: const TextStyle(color: AppColors.equalsButton, fontSize: 40, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppColors.equalsButton, fontSize: 40, fontWeight: FontWeight.bold),
           )
         ],
       ),
@@ -215,8 +215,8 @@ class _ConverterTabState extends State<_ConverterTab> {
     return DropdownButton<String>(
       value: currentValue,
       dropdownColor: AppColors.navCapsule,
-      style: const TextStyle(color: Colors.white, fontSize: 16),
-      underline: Container(height: 1, color: Colors.white24),
+      style: TextStyle(color: AppColors.numberText, fontSize: 16),
+      underline: Container(height: 1, color: AppColors.numberText.withOpacity(0.24)),
       items: widget.units.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
       onChanged: (val) {
         if (val != null) {

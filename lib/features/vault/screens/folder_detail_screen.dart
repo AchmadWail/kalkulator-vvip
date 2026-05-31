@@ -11,7 +11,7 @@ class FolderDetailScreen extends StatefulWidget {
   final String folderType; // 'image', 'video', 'document', 'audio'
   final bool isVip;
 
-  const FolderDetailScreen({
+  FolderDetailScreen({
     Key? key,
     required this.title,
     required this.folderType,
@@ -33,7 +33,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
     super.initState();
     _fabAnimController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: Duration(milliseconds: 300),
     );
     _loadFiles();
   }
@@ -57,7 +57,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
   void _addMedia() async {
     if (!widget.isVip) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text("Akses VIP diperlukan untuk menambah file."),
           backgroundColor: Colors.redAccent,
         ),
@@ -128,8 +128,8 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.check_circle, color: Colors.white, size: 20),
-                const SizedBox(width: 8),
+                Icon(Icons.check_circle, color: AppColors.numberText, size: 20),
+                SizedBox(width: 8),
                 Expanded(child: Text('$fileName berhasil ditambahkan')),
               ],
             ),
@@ -147,21 +147,21 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1C1C1E),
+        backgroundColor: Color(0xFF1C1C1E),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Hapus File', style: TextStyle(color: Colors.white)),
+        title: Text('Hapus File', style: TextStyle(color: AppColors.numberText)),
         content: Text(
           'Yakin ingin menghapus "${file.name}"?',
-          style: TextStyle(color: Colors.white.withOpacity(0.7)),
+          style: TextStyle(color: AppColors.numberText.withOpacity(0.7)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal', style: TextStyle(color: Colors.white54)),
+            child: Text('Batal', style: TextStyle(color: AppColors.numberText.withOpacity(0.54))),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Hapus', style: TextStyle(color: Colors.redAccent)),
+            child: Text('Hapus', style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),
@@ -223,14 +223,14 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
-        backgroundColor: Colors.black,
+        backgroundColor: AppColors.background,
         actions: [
           if (widget.isVip && _files.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(right: 12),
+              padding: EdgeInsets.only(right: 12),
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: accent.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
@@ -257,7 +257,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
           ? FloatingActionButton(
               onPressed: _addMedia,
               backgroundColor: accent,
-              child: const Icon(Icons.add, color: Colors.black, size: 28),
+              child: Icon(Icons.add, color: AppColors.background, size: 28),
             )
           : null,
     );
@@ -273,27 +273,27 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
             size: 80,
             color: accent.withOpacity(0.3),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           Text(
             widget.isVip
                 ? 'Folder ${widget.title} kosong'
                 : 'Folder ${widget.title} kosong',
-            style: const TextStyle(color: Colors.white54, fontSize: 18),
+            style: TextStyle(color: AppColors.numberText.withOpacity(0.54), fontSize: 18),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             widget.isVip
                 ? 'Tekan + untuk menambahkan file'
                 : 'Upgrade ke VIP untuk menambahkan file',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.3),
+              color: AppColors.numberText.withOpacity(0.3),
               fontSize: 14,
             ),
           ),
           if (!widget.isVip) ...[
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.amber.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
@@ -301,7 +301,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
+                children: [
                   Icon(Icons.lock, color: Colors.amber, size: 16),
                   SizedBox(width: 8),
                   Text(
@@ -326,9 +326,9 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
 
   Widget _buildImageGrid() {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: EdgeInsets.all(8.0),
       child: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
           crossAxisSpacing: 4,
           mainAxisSpacing: 4,
@@ -348,7 +348,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.white10, width: 0.5),
+                      border: Border.all(color: AppColors.numberText.withOpacity(0.10), width: 0.5),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
@@ -357,7 +357,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(
                           color: Colors.grey[900],
-                          child: const Icon(Icons.broken_image, color: Colors.white38),
+                          child: Icon(Icons.broken_image, color: AppColors.numberText.withOpacity(0.38)),
                         ),
                       ),
                     ),
@@ -373,9 +373,9 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20),
-                        padding: const EdgeInsets.all(4),
-                        constraints: const BoxConstraints(),
+                        icon: Icon(Icons.delete, color: Colors.redAccent, size: 20),
+                        padding: EdgeInsets.all(4),
+                        constraints: BoxConstraints(),
                         onPressed: () => _deleteFile(index),
                       ),
                     ),
@@ -390,7 +390,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
 
   Widget _buildFileList() {
     return ListView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12),
       itemCount: _files.length,
       itemBuilder: (context, index) {
         final file = _files[index];
@@ -400,33 +400,33 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
           direction: widget.isVip ? DismissDirection.endToStart : DismissDirection.none,
           background: Container(
             alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: 20),
+            padding: EdgeInsets.only(right: 20),
             decoration: BoxDecoration(
               color: Colors.red.withOpacity(0.3),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.delete, color: Colors.redAccent),
+            child: Icon(Icons.delete, color: Colors.redAccent),
           ),
           confirmDismiss: (_) async {
             if (!widget.isVip) return false;
             return await showDialog<bool>(
               context: context,
               builder: (ctx) => AlertDialog(
-                backgroundColor: const Color(0xFF1C1C1E),
+                backgroundColor: Color(0xFF1C1C1E),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                title: const Text('Hapus File', style: TextStyle(color: Colors.white)),
+                title: Text('Hapus File', style: TextStyle(color: AppColors.numberText)),
                 content: Text(
                   'Yakin ingin menghapus "${file.name}"?',
-                  style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                  style: TextStyle(color: AppColors.numberText.withOpacity(0.7)),
                 ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(ctx, false),
-                    child: const Text('Batal', style: TextStyle(color: Colors.white54)),
+                    child: Text('Batal', style: TextStyle(color: AppColors.numberText.withOpacity(0.54))),
                   ),
                   TextButton(
                     onPressed: () => Navigator.pop(ctx, true),
-                    child: const Text('Hapus', style: TextStyle(color: Colors.redAccent)),
+                    child: Text('Hapus', style: TextStyle(color: Colors.redAccent)),
                   ),
                 ],
               ),
@@ -437,14 +437,14 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
             await _loadFiles();
           },
           child: Container(
-            margin: const EdgeInsets.only(bottom: 8),
+            margin: EdgeInsets.only(bottom: 8),
             decoration: BoxDecoration(
               color: Colors.grey[900],
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white10),
+              border: Border.all(color: AppColors.numberText.withOpacity(0.10)),
             ),
             child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               leading: Container(
                 width: 44,
                 height: 44,
@@ -456,17 +456,17 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
               ),
               title: Text(
                 file.name,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
+                style: TextStyle(color: AppColors.numberText, fontSize: 14),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               subtitle: Text(
                 _formatDate(file.addedAt),
-                style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12),
+                style: TextStyle(color: AppColors.numberText.withOpacity(0.4), fontSize: 12),
               ),
               trailing: widget.isVip
                   ? IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.white38, size: 20),
+                      icon: Icon(Icons.delete_outline, color: AppColors.numberText.withOpacity(0.38), size: 20),
                       onPressed: () => _deleteFile(index),
                     )
                   : null,
@@ -495,13 +495,13 @@ class _FullScreenImageViewer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
           fileName,
-          style: const TextStyle(fontSize: 14, color: Colors.white70),
+          style: TextStyle(fontSize: 14, color: AppColors.numberText.withOpacity(0.70)),
         ),
       ),
       body: Center(
@@ -511,9 +511,9 @@ class _FullScreenImageViewer extends StatelessWidget {
           child: Image.memory(
             imageBytes,
             fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => const Icon(
+            errorBuilder: (_, __, ___) => Icon(
               Icons.broken_image,
-              color: Colors.white38,
+              color: AppColors.numberText.withOpacity(0.38),
               size: 80,
             ),
           ),

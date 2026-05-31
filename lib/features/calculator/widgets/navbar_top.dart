@@ -4,9 +4,10 @@ import '../../converters/screens/unit_converter_screen.dart';
 import '../../converters/screens/currency_converter_screen.dart';
 import '../../history/screens/history_screen.dart';
 import '../../info_modal/widgets/info_modal_widget.dart';
+import '../../settings/screens/settings_screen.dart';
 
 class NavbarTop extends StatelessWidget {
-  const NavbarTop({Key? key}) : super(key: key);
+  NavbarTop({Key? key}) : super(key: key);
 
   void _showInfo(BuildContext context) {
     showDialog(
@@ -24,7 +25,7 @@ class NavbarTop extends StatelessWidget {
 
     if (isSelected) {
       iconWidget = Container(
-        padding: const EdgeInsets.all(4),
+        padding: EdgeInsets.all(4),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(color: AppColors.equalsButton.withOpacity(0.3), width: 1),
@@ -43,7 +44,7 @@ class NavbarTop extends StatelessWidget {
       },
       borderRadius: BorderRadius.circular(30),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
         child: iconWidget,
       ),
     );
@@ -56,36 +57,64 @@ class NavbarTop extends StatelessWidget {
     final iconSize = calculatedSize.clamp(18.0, 24.0);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+      padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Left side: Question mark in a circle
-          InkWell(
-            onTap: () => _showInfo(context),
-            borderRadius: BorderRadius.circular(30),
-            child: Container(
-              width: 44,
-              height: 44,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.navCapsule,
-                shape: BoxShape.circle,
-              ),
-              child: Text(
-                '?',
-                style: TextStyle(
-                  color: AppColors.navbarIcon,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
+          // Left side: Question mark and Settings
+          Row(
+            children: [
+              InkWell(
+                onTap: () => _showInfo(context),
+                borderRadius: BorderRadius.circular(30),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppColors.navCapsule,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    '?',
+                    style: TextStyle(
+                      color: AppColors.navbarIcon,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ),
-            ),
+              SizedBox(width: 8),
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => SettingsScreen()),
+                  );
+                },
+                borderRadius: BorderRadius.circular(30),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppColors.navCapsule,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.settings_outlined,
+                    color: AppColors.navbarIcon,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ],
           ),
           
           // Right side: Icons in a capsule
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             decoration: BoxDecoration(
               color: AppColors.navCapsule,
               borderRadius: BorderRadius.circular(30),
@@ -93,9 +122,9 @@ class NavbarTop extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildNavIcon(context, Icons.access_time, 'Riwayat', iconSize, navigateTo: const HistoryScreen()),
-                _buildNavIcon(context, Icons.monetization_on_outlined, 'Mata Uang', iconSize, navigateTo: const CurrencyConverterScreen(), isSelected: true),
-                _buildNavIcon(context, Icons.straighten, 'Satuan', iconSize, navigateTo: const UnitConverterScreen()),
+                _buildNavIcon(context, Icons.access_time, 'Riwayat', iconSize, navigateTo: HistoryScreen()),
+                _buildNavIcon(context, Icons.monetization_on_outlined, 'Mata Uang', iconSize, navigateTo: CurrencyConverterScreen(), isSelected: true),
+                _buildNavIcon(context, Icons.straighten, 'Satuan', iconSize, navigateTo: UnitConverterScreen()),
               ],
             ),
           )

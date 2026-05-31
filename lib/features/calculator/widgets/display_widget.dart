@@ -4,7 +4,7 @@ import '../providers/calculator_provider.dart';
 import '../../../core/theme/app_colors.dart';
 
 class DisplayWidget extends StatelessWidget {
-  const DisplayWidget({Key? key}) : super(key: key);
+  DisplayWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +12,7 @@ class DisplayWidget extends StatelessWidget {
     final previewValue = context.watch<CalculatorProvider>().previewValue;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
       alignment: Alignment.bottomRight,
       child: Column(
         mainAxisSize: MainAxisSize.min, // Agar column tidak maksa tinggi maksimum jika tidak perlu
@@ -26,7 +26,7 @@ class DisplayWidget extends StatelessWidget {
                 alignment: Alignment.bottomRight,
                 child: Text(
                   displayValue,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.previewText,
                     fontSize: 32,
                     fontWeight: FontWeight.w400,
@@ -35,14 +35,14 @@ class DisplayWidget extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Flexible(
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.bottomRight,
                 child: Text(
                   previewValue,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.numberText,
                     fontSize: 80,
                     fontWeight: FontWeight.w300,
@@ -59,7 +59,7 @@ class DisplayWidget extends StatelessWidget {
                 alignment: Alignment.bottomRight,
                 child: Text(
                   displayValue,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.numberText,
                     fontSize: 80,
                     fontWeight: FontWeight.w300,

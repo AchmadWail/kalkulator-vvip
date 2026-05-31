@@ -11,7 +11,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => CalculatorProvider()),
         ChangeNotifierProvider(create: (_) => HistoryProvider()),
       ],
-      child: const KalkulatorVipApp(),
+      child: KalkulatorVipApp(),
     ),
   );
 }

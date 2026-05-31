@@ -35,7 +35,7 @@ class VaultFileData {
 }
 
 class VaultStorageService {
-  static const String _storageKey = 'vault_files_data';
+  static String _storageKey = 'vault_files_data';
 
   /// Get all files for a specific folder type
   static Future<List<VaultFileData>> getFiles(String folderType) async {

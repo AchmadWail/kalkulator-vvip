@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import '../../../core/theme/app_colors.dart';
 
 class CurrencyConverterScreen extends StatefulWidget {
-  const CurrencyConverterScreen({Key? key}) : super(key: key);
+  CurrencyConverterScreen({Key? key}) : super(key: key);
 
   @override
   State<CurrencyConverterScreen> createState() => _CurrencyConverterScreenState();
@@ -95,31 +95,35 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text("Konverter Valuta", style: TextStyle(color: Colors.white)), backgroundColor: Colors.black, iconTheme: const IconThemeData(color: Colors.white)),
+      appBar: AppBar(
+        title: Text("Konverter Valuta", style: TextStyle(color: AppColors.numberText)), 
+        backgroundColor: AppColors.background, 
+        iconTheme: IconThemeData(color: AppColors.numberText)
+      ),
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator(color: AppColors.equalsButton))
+        ? Center(child: CircularProgressIndicator(color: AppColors.equalsButton))
         : Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: EdgeInsets.all(24.0),
         child: Column(
           children: [
             TextField(
               controller: _inputController,
               keyboardType: TextInputType.number,
-              style: const TextStyle(color: Colors.white, fontSize: 32),
-              decoration: const InputDecoration(
+              style: TextStyle(color: AppColors.numberText, fontSize: 32),
+              decoration: InputDecoration(
                 labelText: "Jumlah", 
                 labelStyle: TextStyle(color: AppColors.previewText),
                 enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.operatorButton)),
                 focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.equalsButton)),
               ),
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: 40),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
                       color: AppColors.numberButton,
                       borderRadius: BorderRadius.circular(16)
@@ -129,7 +133,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                         isExpanded: true,
                         value: _fromUnit,
                         dropdownColor: AppColors.numberButton,
-                        style: const TextStyle(color: Colors.white, fontSize: 18),
+                        style: TextStyle(color: AppColors.numberText, fontSize: 18),
                         items: _units.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
                         onChanged: (v) {
                           setState(() => _fromUnit = v!);
@@ -139,13 +143,13 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                     ),
                   ),
                 ),
-                const Padding(
+                Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.0),
                   child: Icon(Icons.swap_horiz, color: AppColors.navbarIcon, size: 32),
                 ),
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
                       color: AppColors.numberButton,
                       borderRadius: BorderRadius.circular(16)
@@ -155,7 +159,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                         isExpanded: true,
                         value: _toUnit,
                         dropdownColor: AppColors.numberButton,
-                        style: const TextStyle(color: Colors.white, fontSize: 18),
+                        style: TextStyle(color: AppColors.numberText, fontSize: 18),
                         items: _units.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
                         onChanged: (v) {
                           setState(() => _toUnit = v!);
@@ -167,14 +171,14 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 60),
-            const Text("Hasil Konversi:", style: TextStyle(color: AppColors.previewText, fontSize: 16)),
-            const SizedBox(height: 8),
+            SizedBox(height: 60),
+            Text("Hasil Konversi:", style: TextStyle(color: AppColors.previewText, fontSize: 16)),
+            SizedBox(height: 8),
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
                 "$_result $_toUnit", 
-                style: const TextStyle(color: AppColors.equalsButton, fontSize: 48, fontWeight: FontWeight.bold)
+                style: TextStyle(color: AppColors.equalsButton, fontSize: 48, fontWeight: FontWeight.bold)
               ),
             ),
           ],

@@ -7,10 +7,10 @@ import 'vault_screen.dart';
 import 'dart:ui';
 
 class PaymentScreen extends StatelessWidget {
-  const PaymentScreen({Key? key}) : super(key: key);
+  PaymentScreen({Key? key}) : super(key: key);
 
   // Link DANA langsung
-  static const String _danaPaymentLink =
+  static String _danaPaymentLink =
       "https://link.dana.id/minta?full_url=https://qr.dana.id/v1/281012092026051530332753";
 
   final int amount = 15000;
@@ -43,7 +43,7 @@ class PaymentScreen extends StatelessWidget {
 
     if (!launched && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Tidak dapat membuka DANA secara otomatis. Pastikan DANA terinstal.'),
           backgroundColor: Colors.redAccent,
         ),
@@ -57,7 +57,7 @@ class PaymentScreen extends StatelessWidget {
     if (context.mounted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const VaultScreen(isVip: true)),
+        MaterialPageRoute(builder: (_) => VaultScreen(isVip: true)),
       );
     }
   }
@@ -67,7 +67,7 @@ class PaymentScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text("Premium Access"),
+        title: Text("Premium Access"),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -111,12 +111,12 @@ class PaymentScreen extends StatelessWidget {
           // Content
           Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              padding: EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildPremiumCard(context),
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40),
                   _buildDanaButton(context),
                 ],
               ),
@@ -130,13 +130,13 @@ class PaymentScreen extends StatelessWidget {
   Widget _buildPremiumCard(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF2C2C2E).withOpacity(0.9),
-            const Color(0xFF1C1C1E).withOpacity(0.95),
+            Color(0xFF2C2C2E).withOpacity(0.9),
+            Color(0xFF1C1C1E).withOpacity(0.95),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -145,13 +145,13 @@ class PaymentScreen extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withOpacity(0.5),
             blurRadius: 20,
-            offset: const Offset(0, 10),
+            offset: Offset(0, 10),
           ),
           BoxShadow(
             color: Colors.amber.withOpacity(0.1),
             blurRadius: 30,
             spreadRadius: -5,
-            offset: const Offset(0, -5),
+            offset: Offset(0, -5),
           ),
         ],
         border: Border.all(
@@ -165,15 +165,15 @@ class PaymentScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Icon(Icons.shield, color: Colors.amber, size: 36),
+              Icon(Icons.shield, color: Colors.amber, size: 36),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.amber.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.amber.withOpacity(0.5)),
                 ),
-                child: const Text(
+                child: Text(
                   "VVIP STATUS",
                   style: TextStyle(
                     color: Colors.amber,
@@ -185,30 +185,30 @@ class PaymentScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 30),
-          const Text(
+          SizedBox(height: 30),
+          Text(
             "Akses Vault VIP",
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w900,
-              color: Colors.white,
+              color: AppColors.numberText,
               letterSpacing: 0.5,
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           Text(
             "Buka fitur tersembunyi tanpa batas. Amankan foto, video, dokumen, dan audio pribadi Anda.",
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white.withOpacity(0.7),
+              color: AppColors.numberText.withOpacity(0.7),
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 30),
+          SizedBox(height: 30),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Text(
+              Text(
                 "Rp",
                 style: TextStyle(
                   fontSize: 18,
@@ -216,22 +216,22 @@ class PaymentScreen extends StatelessWidget {
                   color: Colors.amber,
                 ),
               ),
-              const SizedBox(width: 4),
-              const Text(
+              SizedBox(width: 4),
+              Text(
                 "15.000",
                 style: TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.w900,
-                  color: Colors.white,
+                  color: AppColors.numberText,
                   height: 1,
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 "/ selamanya",
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.white.withOpacity(0.5),
+                  color: AppColors.numberText.withOpacity(0.5),
                 ),
               ),
             ],
@@ -249,30 +249,30 @@ class PaymentScreen extends StatelessWidget {
         height: 60,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30),
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             colors: [Color(0xFF118EEA), Color(0xFF0F75C1)], // Warna khas DANA
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF118EEA).withOpacity(0.4),
+              color: Color(0xFF118EEA).withOpacity(0.4),
               blurRadius: 15,
-              offset: const Offset(0, 8),
+              offset: Offset(0, 8),
             ),
           ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.payment, color: Colors.white, size: 24),
+          children: [
+            Icon(Icons.payment, color: AppColors.numberText, size: 24),
             SizedBox(width: 12),
             Text(
               "Bayar Sekarang dengan DANA",
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.numberText,
                 letterSpacing: 0.5,
               ),
             ),

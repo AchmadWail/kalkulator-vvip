@@ -5,18 +5,18 @@ import 'dart:math' as math;
 import '../../../core/theme/app_colors.dart';
 
 class KeypadWidget extends StatelessWidget {
-  const KeypadWidget({Key? key}) : super(key: key);
+  KeypadWidget({Key? key}) : super(key: key);
 
   Widget _buildButton(BuildContext context, Widget content, Color bgColor, Color textColor, double buttonSize, {String? actionString}) {
     return Container(
       width: buttonSize,
       height: buttonSize,
-      margin: const EdgeInsets.all(8),
+      margin: EdgeInsets.all(8),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: bgColor,
           foregroundColor: textColor,
-          shape: const CircleBorder(),
+          shape: CircleBorder(),
           padding: EdgeInsets.zero,
           elevation: 0,
         ),
@@ -73,7 +73,7 @@ class KeypadWidget extends StatelessWidget {
           child: SizedBox(
             width: maxWidth,
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
+              padding: EdgeInsets.only(bottom: 16.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
