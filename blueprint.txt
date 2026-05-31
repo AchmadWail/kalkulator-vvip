@@ -1,0 +1,580 @@
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                        BLUEPRINT — KALKULATOR VIP                                  ║
+║             Flutter (Dart) + HTML + CSS + JS  |  Fullstack  |  No API KEY          ║
+║                   Versi 2.0  |  Kode VIP: 99+99=  |  2026                          ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BAGIAN A — TECH STACK FULLSTACK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Layer             Teknologi               Peran
+  ─────────────────────────────────────────────────────────────────────────────────
+  Mobile App        Flutter (Dart)          Aplikasi Android / iOS
+  Web Frontend      HTML + CSS + JS         Versi web browser
+  Kurs Mata Uang    JSON lokal + scraping   Tanpa API KEY (update manual / otomatis)
+  Storage File      Flutter: path_provider  Simpan file vault di device
+                    Web: IndexedDB (JS)     Simpan file vault di browser
+  Status VIP        Flutter: shared_prefs   Simpan status VIP di device
+                    Web: localStorage (JS)  Simpan status VIP di browser
+  Pembayaran        DANA Deep Link (Dart)   Redirect ke DANA app
+                    DANA URL Scheme (JS)    Redirect ke DANA web/app
+  ─────────────────────────────────────────────────────────────────────────────────
+
+  CATATAN KURS TANPA API KEY:
+  ┌─────────────────────────────────────────────────────────────────────────────┐
+  │  Opsi 1 (Recommended): Scraping publik dari frankfurter.app                │
+  │           → API gratis, tanpa daftar, tanpa key                            │
+  │           → URL: https://api.frankfurter.app/latest?from=USD               │
+  │                                                                            │
+  │  Opsi 2: File JSON lokal (offline)                                         │
+  │           → assets/data/currency_rates.json                                │
+  │           → Update manual berkala                                          │
+  │                                                                            │
+  │  Opsi 3: Kombinasi (online jika ada koneksi, fallback JSON lokal)          │
+  │           → Paling robust untuk production                                 │
+  └─────────────────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BAGIAN B — STRUKTUR FOLDER PROYEK LENGKAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+kalkulator-vip/
+│
+│  ══════════════════════════════════════════
+│  FLUTTER (DART) — Mobile App
+│  ══════════════════════════════════════════
+│
+├── android/                        → Konfigurasi Android build
+├── ios/                            → Konfigurasi iOS build
+├── web/                            → Flutter web output (opsional)
+│
+├── lib/
+│   │
+│   ├── main.dart                   → Entry point Flutter
+│   ├── app.dart                    → MaterialApp + routing + tema
+│   │
+│   ├── core/
+│   │   ├── theme/
+│   │   │   ├── app_theme.dart      → Dark theme, warna, font
+│   │   │   └── app_colors.dart     → Konstanta warna global
+│   │   ├── constants/
+│   │   │   ├── app_constants.dart  → Konstanta string, ukuran
+│   │   │   ├── secret_codes.dart   → Daftar kode rahasia + aksi
+│   │   │   ├── currency_data.dart  → Daftar nama mata uang
+│   │   │   └── unit_data.dart      → Daftar satuan semua kategori
+│   │   └── router/
+│   │       └── app_router.dart     → GoRouter / Navigator routing
+│   │
+│   ├── features/
+│   │   │
+│   │   ├── calculator/
+│   │   │   ├── screens/
+│   │   │   │   └── calculator_screen.dart     → Halaman kalkulator utama
+│   │   │   ├── widgets/
+│   │   │   │   ├── display_widget.dart        → Widget layar angka
+│   │   │   │   ├── keypad_widget.dart         → Tombol angka + operator
+│   │   │   │   ├── scientific_keypad.dart     → Mode saintifik
+│   │   │   │   └── navbar_top.dart            → Navbar 3 ikon atas
+│   │   │   ├── logic/
+│   │   │   │   ├── calculator_logic.dart      → Logika hitung (eval)
+│   │   │   │   └── secret_detector.dart       → Deteksi kode 1+1= / 99+99=
+│   │   │   └── providers/
+│   │   │       └── calculator_provider.dart   → State management (Provider)
+│   │   │
+│   │   ├── history/
+│   │   │   ├── screens/
+│   │   │   │   └── history_screen.dart        → Halaman riwayat
+│   │   │   ├── widgets/
+│   │   │   │   └── history_item_widget.dart   → Item satu baris riwayat
+│   │   │   ├── models/
+│   │   │   │   └── history_model.dart         → Model data riwayat
+│   │   │   └── providers/
+│   │   │       └── history_provider.dart      → State + simpan riwayat
+│   │   │
+│   │   ├── currency_converter/
+│   │   │   ├── screens/
+│   │   │   │   └── currency_screen.dart       → Halaman konverter valuta
+│   │   │   ├── widgets/
+│   │   │   │   ├── currency_selector.dart     → Dropdown mata uang
+│   │   │   │   └── rate_display.dart          → Tampilan hasil konversi
+│   │   │   ├── models/
+│   │   │   │   └── currency_model.dart        → Model data kurs
+│   │   │   ├── services/
+│   │   │   │   └── currency_service.dart      → Fetch frankfurter.app / fallback JSON
+│   │   │   └── providers/
+│   │   │       └── currency_provider.dart     → State kurs
+│   │   │
+│   │   ├── unit_converter/
+│   │   │   ├── screens/
+│   │   │   │   └── unit_screen.dart           → Halaman konverter satuan
+│   │   │   ├── widgets/
+│   │   │   │   ├── unit_tabs.dart             → Tab Panjang/Berat/Suhu/Area/Volume/Waktu
+│   │   │   │   └── unit_input.dart            → Input + dropdown satuan
+│   │   │   ├── models/
+│   │   │   │   └── unit_model.dart            → Model data satuan
+│   │   │   ├── converters/
+│   │   │   │   ├── length_converter.dart      → ft,cm,in,m,dm,mm,km,µm,mi,yd
+│   │   │   │   ├── weight_converter.dart      → kg,g,mg,lb,oz,ton,kwintal,grain
+│   │   │   │   ├── temperature_converter.dart → Celsius,Fahrenheit,Kelvin,Rankine
+│   │   │   │   ├── area_converter.dart        → m²,km²,cm²,ha,ft²,mi²,acre
+│   │   │   │   ├── volume_converter.dart      → liter,ml,m³,gallon,fl-oz,pint,quart
+│   │   │   │   └── time_converter.dart        → detik,menit,jam,hari,minggu,bulan,tahun
+│   │   │   └── providers/
+│   │   │       └── unit_provider.dart         → State konverter satuan
+│   │   │
+│   │   ├── info_modal/
+│   │   │   └── widgets/
+│   │   │       └── info_modal_widget.dart     → Pop-up tombol ? (ketentuan + kode)
+│   │   │
+│   │   ├── payment/
+│   │   │   ├── screens/
+│   │   │   │   └── payment_screen.dart        → Modal bayar Rp 15.000
+│   │   │   ├── services/
+│   │   │   │   └── dana_service.dart          → Generate DANA deep link
+│   │   │   └── providers/
+│   │   │       └── payment_provider.dart      → State status VIP
+│   │   │
+│   │   └── vault/
+│   │       ├── screens/
+│   │       │   ├── vault_screen.dart          → Halaman utama vault
+│   │       │   ├── folder_images_screen.dart  → Folder gambar
+│   │       │   ├── folder_videos_screen.dart  → Folder video
+│   │       │   ├── folder_documents_screen.dart → Folder dokumen
+│   │       │   └── folder_recordings_screen.dart → Folder rekaman
+│   │       ├── widgets/
+│   │       │   ├── vault_folder_card.dart     → Kartu folder (Gambar/Video/Dok/Rekaman)
+│   │       │   ├── add_file_button.dart       → Tombol + pojok kanan
+│   │       │   ├── add_file_picker.dart       → Bottom sheet pilihan tambah file
+│   │       │   └── file_viewer.dart           → Viewer gambar/video/pdf/audio
+│   │       ├── models/
+│   │       │   └── vault_file_model.dart      → Model data file vault
+│   │       ├── services/
+│   │       │   └── vault_storage_service.dart → Simpan/ambil file (path_provider)
+│   │       └── providers/
+│   │           └── vault_provider.dart        → State file vault
+│   │
+│   ├── shared/
+│   │   ├── widgets/
+│   │   │   ├── custom_button.dart             → Tombol reusable
+│   │   │   ├── custom_modal.dart              → Modal reusable
+│   │   │   └── loading_widget.dart            → Loading indicator
+│   │   └── utils/
+│   │       ├── format_number.dart             → Format angka (titik/koma)
+│   │       └── vip_checker.dart               → Cek status VIP dari shared_prefs
+│   │
+│   └── data/
+│       └── currency_rates.json               → Data kurs lokal (fallback offline)
+│
+├── assets/
+│   ├── icons/
+│   │   ├── icon_clock.svg          → Ikon jam (riwayat)
+│   │   ├── icon_dollar.svg         → Ikon dolar (konverter valuta)
+│   │   ├── icon_ruler.svg          → Ikon penggaris (konverter satuan)
+│   │   └── icon_question.svg       → Ikon tanda tanya
+│   ├── images/
+│   │   └── logo.png                → Logo aplikasi
+│   └── data/
+│       └── currency_rates.json     → Salinan kurs untuk assets
+│
+├── test/
+│   ├── calculator_test.dart        → Unit test logika kalkulator
+│   ├── converter_test.dart         → Unit test semua konverter satuan
+│   └── secret_code_test.dart       → Unit test deteksi kode rahasia
+│
+├── pubspec.yaml                    → Dependensi Flutter
+└── pubspec.lock
+│
+│  ══════════════════════════════════════════
+│  WEB FRONTEND — HTML + CSS + JS
+│  ══════════════════════════════════════════
+│
+└── web_app/
+    │
+    ├── index.html                  → Entry point web
+    │
+    ├── pages/
+    │   ├── calculator.html         → Halaman kalkulator utama
+    │   ├── history.html            → Halaman riwayat
+    │   ├── currency.html           → Halaman konverter valuta
+    │   ├── unit.html               → Halaman konverter satuan
+    │   ├── vault.html              → Halaman vault
+    │   └── payment.html            → Halaman pembayaran VIP
+    │
+    ├── css/
+    │   ├── global.css              → Reset, variabel warna, font global
+    │   ├── navbar.css              → Style navbar atas
+    │   ├── calculator.css          → Style kalkulator + keypad
+    │   ├── history.css             → Style halaman riwayat
+    │   ├── currency.css            → Style konverter valuta
+    │   ├── unit.css                → Style konverter satuan + tab
+    │   ├── vault.css               → Style album tersembunyi
+    │   ├── payment.css             → Style modal pembayaran
+    │   ├── modal.css               → Style modal umum
+    │   └── animations.css          → Transisi & animasi UI
+    │
+    ├── js/
+    │   ├── app.js                  → Init app + routing SPA
+    │   ├── navbar.js               → Logic navbar 3 ikon
+    │   │
+    │   ├── calculator/
+    │   │   ├── calculator.js       → Logic kalkulasi utama
+    │   │   ├── scientific.js       → Mode saintifik
+    │   │   └── secretDetector.js   → Deteksi kode 1+1= / 99+99=
+    │   │
+    │   ├── history/
+    │   │   └── history.js          → Simpan + tampil riwayat (localStorage)
+    │   │
+    │   ├── currency/
+    │   │   ├── currencyConverter.js  → Logic konversi mata uang
+    │   │   ├── currencyFetch.js      → Fetch frankfurter.app / fallback JSON
+    │   │   └── currencyData.js       → Daftar nama + kode mata uang
+    │   │
+    │   ├── unit/
+    │   │   ├── unitConverter.js      → Logic tab + konversi satuan
+    │   │   ├── lengthConvert.js      → Rumus panjang semua unit
+    │   │   ├── weightConvert.js      → Rumus berat semua unit
+    │   │   ├── tempConvert.js        → Rumus suhu semua unit
+    │   │   ├── areaConvert.js        → Rumus area semua unit
+    │   │   ├── volumeConvert.js      → Rumus volume semua unit
+    │   │   └── timeConvert.js        → Rumus waktu semua unit
+    │   │
+    │   ├── payment/
+    │   │   ├── paymentModal.js       → Tampil modal bayar Rp 15.000
+    │   │   ├── danaRedirect.js       → Redirect ke DANA deep link
+    │   │   └── vipStatus.js          → Simpan/cek status VIP (localStorage)
+    │   │
+    │   └── vault/
+    │       ├── vault.js              → Init vault + cek akses
+    │       ├── vaultDB.js            → IndexedDB CRUD (images/videos/docs/rec)
+    │       ├── addFilePicker.js      → Bottom sheet pilihan tambah file
+    │       └── fileViewer.js         → Viewer file (gambar/video/pdf/audio)
+    │
+    └── data/
+        └── currency_rates.json       → Data kurs lokal (fallback offline)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BAGIAN C — ARSITEKTUR FITUR (LAYER)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ┌────────────────────────────────────────────────────────────────────┐
+  │  LAYER 1 — NAVBAR ATAS                                            │
+  │  ┌─────────────┐  ┌──────────────────┐  ┌──────────────────────┐ │
+  │  │  🕐 Riwayat │  │  💲 Konv. Valuta │  │  📏 Konv. Satuan    │ │
+  │  │  [Dart]     │  │  [Dart + JS]     │  │  [Dart + JS]        │ │
+  │  └─────────────┘  └──────────────────┘  └──────────────────────┘ │
+  └────────────────────────────────────────────────────────────────────┘
+
+  ┌────────────────────────────────────────────────────────────────────┐
+  │  LAYER 2 — KALKULATOR UTAMA                                       │
+  │  ┌────────┐  ┌──────────────────────────────────────────────────┐ │
+  │  │   ?    │  │  Display + Keypad + Scientific Mode              │ │
+  │  │[Dart/  │  │  Dart: calculator_logic.dart                     │ │
+  │  │  JS]   │  │  JS:   calculator.js + scientific.js             │ │
+  │  └────────┘  └──────────────────────────────────────────────────┘ │
+  └────────────────────────────────────────────────────────────────────┘
+
+  ┌────────────────────────────────────────────────────────────────────┐
+  │  LAYER 3 — KONVERTER SATUAN  (6 Tab)                              │
+  │  Panjang  │  Berat  │  Suhu  │  Area  │  Volume  │  Waktu        │
+  │  [length_converter.dart / lengthConvert.js]  ← masing-masing tab │
+  └────────────────────────────────────────────────────────────────────┘
+
+  ┌────────────────────────────────────────────────────────────────────┐
+  │  LAYER 4 — SISTEM KODE RAHASIA                                    │
+  │                                                                    │
+  │  Kode      Dart: secret_detector.dart                             │
+  │  Deteksi   JS:   secretDetector.js                                │
+  │                                                                    │
+  │  1+1=   → Vault (mode lihat saja, GRATIS)                        │
+  │  99+99= → Cek VIP → jika belum bayar → Payment Screen            │
+  │                   → jika sudah bayar → Vault (mode penuh)         │
+  └────────────────────────────────────────────────────────────────────┘
+
+  ┌────────────────────────────────────────────────────────────────────┐
+  │  LAYER 5 — PEMBAYARAN VIP                                         │
+  │                                                                    │
+  │  Modal Rp 15.000                                                  │
+  │  Dart: dana_service.dart  →  dana://pay?amount=15000              │
+  │  JS:   danaRedirect.js    →  window.location = "dana://pay?..."   │
+  │                                                                    │
+  │  Setelah bayar → simpan status VIP:                               │
+  │  Dart: SharedPreferences.setString("vip_unlocked", "true")        │
+  │  JS:   localStorage.setItem("vip_unlocked", "true")               │
+  └────────────────────────────────────────────────────────────────────┘
+
+  ┌────────────────────────────────────────────────────────────────────┐
+  │  LAYER 6 — VAULT (ALBUM TERSEMBUNYI)                              │
+  │                                                                    │
+  │  Dart: vault_storage_service.dart (path_provider + file I/O)      │
+  │  JS:   vaultDB.js (IndexedDB)                                     │
+  │                                                                    │
+  │  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────┐        │
+  │  │ 🖼️ Gambar │ │ 🎞️ Video  │ │ 📄 Dokumen│ │ 🎙️ Rekaman│        │
+  │  └───────────┘ └───────────┘ └───────────┘ └───────────┘        │
+  │                                                                    │
+  │  Tombol + (VIP only) → Picker → Ambil dari device                │
+  └────────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BAGIAN D — ALUR PEMBAYARAN VIP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [User ketik 99+99=]
+        │
+        ▼
+  [Cek VIP status]──── sudah VIP ────────────────────→ [Buka Vault langsung]
+        │
+   belum VIP
+        │
+        ▼
+  [Modal: Bayar Rp 15.000]
+        │
+        ▼
+  [Redirect DANA deep link]
+  dana://pay?amount=15000&note=KalkulatorVIP
+        │
+        ▼
+  [User selesai bayar di DANA]
+        │
+        ▼
+  [Kembali ke app → konfirmasi]
+        │
+        ▼
+  [Simpan vip_unlocked = true]
+  Dart: SharedPreferences
+  JS:   localStorage
+        │
+        ▼
+  [Buka Vault — mode PENUH]
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BAGIAN E — KURS MATA UANG TANPA API KEY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Sumber data gratis (tanpa daftar / tanpa key):
+  ─────────────────────────────────────────────────────────────────────────────
+  1. frankfurter.app       → https://api.frankfurter.app/latest?from=USD
+                             Gratis, open source, tanpa key, update harian
+                             Support 33+ mata uang termasuk IDR, MYR, USD, dll.
+
+  2. Fallback JSON lokal   → assets/data/currency_rates.json
+                             Digunakan jika tidak ada koneksi internet
+                             Format: { "USD":1, "IDR":16200, "MYR":4.7, ... }
+
+  Dart (currency_service.dart):
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  Future<Map> fetchRates() async {                               │
+  │    try {                                                        │
+  │      final res = await http.get(Uri.parse(                      │
+  │        'https://api.frankfurter.app/latest?from=USD'));         │
+  │      return jsonDecode(res.body)['rates'];                      │
+  │    } catch (_) {                                                │
+  │      // fallback ke JSON lokal                                  │
+  │      final str = await rootBundle.loadString(                   │
+  │        'assets/data/currency_rates.json');                      │
+  │      return jsonDecode(str);                                    │
+  │    }                                                            │
+  │  }                                                              │
+  └─────────────────────────────────────────────────────────────────┘
+
+  JS (currencyFetch.js):
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  async function fetchRates() {                                  │
+  │    try {                                                        │
+  │      const res = await fetch(                                   │
+  │        'https://api.frankfurter.app/latest?from=USD');         │
+  │      const data = await res.json();                             │
+  │      return data.rates;                                         │
+  │    } catch {                                                    │
+  │      const res = await fetch('./data/currency_rates.json');     │
+  │      return await res.json();                                   │
+  │    }                                                            │
+  │  }                                                              │
+  └─────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BAGIAN F — DEPENDENSI FLUTTER (pubspec.yaml)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  dependencies:
+    flutter:
+      sdk: flutter
+
+    # State management
+    provider: ^6.x
+
+    # HTTP request (kurs mata uang tanpa key)
+    http: ^1.x
+
+    # Storage VIP status
+    shared_preferences: ^2.x
+
+    # Storage file vault di device
+    path_provider: ^2.x
+
+    # Akses file / galeri / kamera / mikrofon
+    image_picker: ^1.x        → Ambil gambar/video dari galeri atau kamera
+    file_picker: ^6.x         → Ambil dokumen (PDF, doc, dll.)
+    record: ^5.x              → Rekam audio dari mikrofon
+    audioplayers: ^5.x        → Putar rekaman audio
+
+    # Buka DANA deep link
+    url_launcher: ^6.x
+
+    # Tampilan PDF di dalam app
+    flutter_pdfview: ^1.x
+
+    # Video player
+    video_player: ^2.x
+
+    # Navigasi
+    go_router: ^13.x
+
+    # Format angka
+    intl: ^0.19.x
+
+  dev_dependencies:
+    flutter_test:
+      sdk: flutter
+    flutter_lints: ^3.x
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BAGIAN G — ROUTING FLUTTER (app_router.dart)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Route                 Screen                          Keterangan
+  ─────────────────────────────────────────────────────────────────────────────
+  /                     calculator_screen.dart           Halaman utama
+  /history              history_screen.dart              Riwayat kalkulasi
+  /currency             currency_screen.dart             Konverter mata uang
+  /unit                 unit_screen.dart                 Konverter satuan
+  /unit/length          unit_screen.dart?tab=length      Tab panjang
+  /unit/weight          unit_screen.dart?tab=weight      Tab berat
+  /unit/temperature     unit_screen.dart?tab=temp        Tab suhu
+  /unit/area            unit_screen.dart?tab=area        Tab area
+  /unit/volume          unit_screen.dart?tab=volume      Tab volume
+  /unit/time            unit_screen.dart?tab=time        Tab waktu
+  /payment              payment_screen.dart              Modal bayar VIP
+  /vault                vault_screen.dart                Album tersembunyi
+  /vault/images         folder_images_screen.dart        Folder gambar
+  /vault/videos         folder_videos_screen.dart        Folder video
+  /vault/documents      folder_documents_screen.dart     Folder dokumen
+  /vault/recordings     folder_recordings_screen.dart    Folder rekaman
+  ─────────────────────────────────────────────────────────────────────────────
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BAGIAN H — ROUTING WEB (HTML + JS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  URL Hash              File HTML                       Keterangan
+  ─────────────────────────────────────────────────────────────────────────────
+  #/                    calculator.html                 Halaman utama
+  #/history             history.html                    Riwayat
+  #/currency            currency.html                   Konverter valuta
+  #/unit                unit.html                       Konverter satuan
+  #/payment             payment.html                    Modal bayar
+  #/vault               vault.html                      Album tersembunyi
+  ─────────────────────────────────────────────────────────────────────────────
+  Routing SPA dihandle oleh app.js menggunakan hashchange event
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BAGIAN I — DAFTAR KODE RAHASIA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Kode       Hasil Tampil   Aksi Tersembunyi
+  ─────────────────────────────────────────────────────────────────
+  1+1=       2              Buka Vault (mode LIHAT SAJA / gratis)
+  99+99=     198            Buka Vault VIP (perlu bayar Rp 15.000)
+  ─────────────────────────────────────────────────────────────────
+  • Kode tetap menampilkan hasil normal di display kalkulator
+  • Kode tidak terlihat di UI manapun (tersembunyi)
+  • Info kode hanya tampil di modal tombol ? (pojok kiri atas)
+  • Kode baru bisa ditambah di:
+    Dart → lib/core/constants/secret_codes.dart
+    JS   → web_app/js/calculator/secretDetector.js
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BAGIAN J — URUTAN PENGERJAAN (ROADMAP)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  FASE 1 — Fondasi
+  ─────────────────────────────────────────────────────────────────
+  [ ] Setup project Flutter + folder web_app
+  [ ] Buat tema dark + warna global (Dart & CSS)
+  [ ] Buat navbar atas (3 ikon)
+  [ ] Buat UI kalkulator dasar (display + keypad)
+
+  FASE 2 — Fitur Kalkulator
+  ─────────────────────────────────────────────────────────────────
+  [ ] Logic kalkulasi + operator dasar
+  [ ] Mode saintifik (sin, cos, tan, log, dll.)
+  [ ] Riwayat kalkulasi (simpan + tampil)
+  [ ] Deteksi kode rahasia (1+1= dan 99+99=)
+
+  FASE 3 — Konverter
+  ─────────────────────────────────────────────────────────────────
+  [ ] Konverter satuan (6 tab, semua unit)
+  [ ] Konverter mata uang (frankfurter.app + fallback JSON)
+
+  FASE 4 — Sistem VIP + Vault
+  ─────────────────────────────────────────────────────────────────
+  [ ] Modal info tombol ?
+  [ ] Modal bayar Rp 15.000 + redirect DANA
+  [ ] Simpan status VIP (SharedPreferences / localStorage)
+  [ ] Vault: 4 folder + tampilan file
+  [ ] Vault: Tombol + untuk tambah file dari device
+  [ ] Vault: Viewer gambar / video / dokumen / rekaman
+
+  FASE 5 — Polish & Testing
+  ─────────────────────────────────────────────────────────────────
+  [ ] Animasi transisi halaman
+  [ ] Responsif (mobile & tablet)
+  [ ] Unit test semua konverter
+  [ ] Build APK (Flutter) + deploy web (HTML)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BAGIAN K — CATATAN PENTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  1. Kurs Mata Uang
+     • frankfurter.app GRATIS, tanpa daftar, tanpa API key
+     • Mendukung: USD, IDR, MYR, EUR, GBP, JPY, SGD, AUD, dan 25+ lainnya
+     • Update otomatis setiap hari kerja
+     • Jika offline → fallback ke currency_rates.json
+
+  2. Vault / Album Tersembunyi
+     • Flutter: file disimpan di direktori privat app (getApplicationDocumentsDirectory)
+       File tidak bisa diakses aplikasi lain (aman)
+     • Web: file disimpan di IndexedDB browser (base64)
+       Hapus cache browser = hapus semua file vault
+
+  3. Status VIP
+     • Flutter: SharedPreferences (persisten, tidak hilang saat app ditutup)
+     • Web: localStorage (hilang jika browser di-clear)
+     • Untuk produksi: pertimbangkan sistem akun + database server
+
+  4. Pembayaran DANA
+     • Deep link: dana://pay?amount=15000&note=KalkulatorVIP
+     • Jika DANA tidak terinstall: tampilkan pesan "Install DANA terlebih dahulu"
+     • Konfirmasi pembayaran manual oleh admin (atau integrasikan DANA Business API)
+
+  5. Keamanan Kode Rahasia
+     • Kode disimpan sebagai konstanta di dalam app (tidak di server)
+     • Untuk keamanan lebih: encrypt kode atau validasi via server
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  END OF BLUEPRINT — Blueprint_Kalkulator_VIP_v2.txt
+  Stack: Flutter (Dart) + HTML + CSS + JS  |  No API KEY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
