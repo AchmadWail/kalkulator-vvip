@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import '../../../core/theme/app_colors.dart';
 
 class CurrencyConverterScreen extends StatefulWidget {
@@ -11,67 +12,82 @@ class CurrencyConverterScreen extends StatefulWidget {
 }
 
 class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
-  final TextEditingController _inputController = TextEditingController();
-  String _fromCurrency = 'USD';
-  String _toCurrency = 'IDR';
-  String _result = '0.0';
+  final TextEditingController _inputController = TextEditingController(text: "1");
+  String _result = "";
+  String _fromUnit = "USD";
+  String _toUnit = "IDR";
   
-  Map<String, dynamic> _rates = {};
-  List<String> _currencies = ['USD', 'IDR', 'EUR', 'JPY', 'GBP', 'AUD', 'SGD'];
+  Map<String, double> _rates = {};
+  List<String> _units = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadRates();
+    _fetchRates();
+    _inputController.addListener(_calculate);
   }
 
-  Future<void> _loadRates() async {
+  Future<void> _fetchRates() async {
     try {
-      // Load fallback local JSON data
-      final String response = await rootBundle.loadString('assets/data/currency_rates.json');
-      final data = await json.decode(response);
-      setState(() {
-        _rates = data['rates'];
-        // Also add base currency
-        _rates[data['base']] = 1.0;
-        
-        List<String> loadedCurrencies = _rates.keys.toList();
-        if (loadedCurrencies.isNotEmpty) {
-          _currencies = loadedCurrencies;
-          if (!_currencies.contains(_fromCurrency)) _fromCurrency = _currencies[0];
-          if (!_currencies.contains(_toCurrency)) _toCurrency = _currencies.length > 1 ? _currencies[1] : _currencies[0];
-        }
-      });
-    } catch (e) {
-      // Silently fail, use dummy fallback rates if file doesn't exist yet
-      _rates = {
-        'USD': 1.0,
-        'IDR': 15500.0,
-        'EUR': 0.92,
-        'JPY': 150.0,
-        'GBP': 0.79,
-        'AUD': 1.53,
-        'SGD': 1.34,
-      };
+      final res = await http.get(Uri.parse('https://api.frankfurter.app/latest?from=USD'));
+      if (res.statusCode == 200) {
+        _parseData(res.body);
+      } else {
+        await _loadFallback();
+      }
+    } catch (_) {
+      await _loadFallback();
     }
+  }
+
+  Future<void> _loadFallback() async {
+    try {
+      final str = await rootBundle.loadString('assets/data/currency_rates.json');
+      _parseData(str);
+    } catch (_) {
+      setState(() {
+        _isLoading = false;
+        _units = ["USD", "IDR"];
+        _rates = {"USD": 1.0, "IDR": 16000.0};
+      });
+      _calculate();
+    }
+  }
+
+  void _parseData(String jsonStr) {
+    final data = jsonDecode(jsonStr);
+    final ratesMap = data['rates'] as Map<String, dynamic>;
+    
+    Map<String, double> parsedRates = {};
+    parsedRates['USD'] = 1.0; // Base
+    
+    ratesMap.forEach((key, value) {
+      parsedRates[key] = (value as num).toDouble();
+    });
+
+    setState(() {
+      _rates = parsedRates;
+      _units = parsedRates.keys.toList()..sort();
+      _isLoading = false;
+    });
+    _calculate();
   }
 
   void _calculate() {
-    if (_inputController.text.isEmpty) {
-      setState(() => _result = '0.0');
-      return;
-    }
-    double value = double.tryParse(_inputController.text) ?? 0;
+    if (_rates.isEmpty) return;
     
-    // Logic: Convert from X to USD, then USD to Y
-    double fromRate = _rates[_fromCurrency] ?? 1.0;
-    double toRate = _rates[_toCurrency] ?? 1.0;
+    double value = double.tryParse(_inputController.text) ?? 0.0;
     
-    double baseValue = value / fromRate;
-    double finalValue = baseValue * toRate;
+    // Convert from source to USD (Base)
+    double inUsd = value / (_rates[_fromUnit] ?? 1.0);
+    
+    // Convert from USD to target
+    double outValue = inUsd * (_rates[_toUnit] ?? 1.0);
 
     setState(() {
-      _result = finalValue.toStringAsFixed(2);
+      _result = outValue.toStringAsFixed(2);
+      // Remove trailing .00 if needed, but for currency fixed 2 is standard
     });
   }
 
@@ -79,67 +95,91 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Konverter Mata Uang', style: TextStyle(color: Colors.white)),
-        backgroundColor: AppColors.navCapsule,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: Padding(
+      appBar: AppBar(title: const Text("Konverter Valuta", style: TextStyle(color: Colors.white)), backgroundColor: Colors.black, iconTheme: const IconThemeData(color: Colors.white)),
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator(color: AppColors.equalsButton))
+        : Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               controller: _inputController,
               keyboardType: TextInputType.number,
               style: const TextStyle(color: Colors.white, fontSize: 32),
-              onChanged: (v) => _calculate(),
               decoration: const InputDecoration(
-                labelText: 'Jumlah',
-                labelStyle: TextStyle(color: Colors.white54),
-                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
+                labelText: "Jumlah", 
+                labelStyle: TextStyle(color: AppColors.previewText),
+                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.operatorButton)),
                 focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.equalsButton)),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 40),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildDropdown(true),
-                const Icon(Icons.swap_horiz, color: Colors.white54, size: 32),
-                _buildDropdown(false),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.numberButton,
+                      borderRadius: BorderRadius.circular(16)
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: _fromUnit,
+                        dropdownColor: AppColors.numberButton,
+                        style: const TextStyle(color: Colors.white, fontSize: 18),
+                        items: _units.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+                        onChanged: (v) {
+                          setState(() => _fromUnit = v!);
+                          _calculate();
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Icon(Icons.swap_horiz, color: AppColors.navbarIcon, size: 32),
+                ),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.numberButton,
+                      borderRadius: BorderRadius.circular(16)
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: _toUnit,
+                        dropdownColor: AppColors.numberButton,
+                        style: const TextStyle(color: Colors.white, fontSize: 18),
+                        items: _units.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+                        onChanged: (v) {
+                          setState(() => _toUnit = v!);
+                          _calculate();
+                        },
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 48),
-            const Text('Hasil Konversi:', style: TextStyle(color: Colors.white54, fontSize: 18)),
+            const SizedBox(height: 60),
+            const Text("Hasil Konversi:", style: TextStyle(color: AppColors.previewText, fontSize: 16)),
             const SizedBox(height: 8),
-            Text(
-              '$_result $_toCurrency',
-              style: const TextStyle(color: AppColors.equalsButton, fontSize: 40, fontWeight: FontWeight.bold),
-            )
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                "$_result $_toUnit", 
+                style: const TextStyle(color: AppColors.equalsButton, fontSize: 48, fontWeight: FontWeight.bold)
+              ),
+            ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildDropdown(bool isFrom) {
-    String currentValue = isFrom ? _fromCurrency : _toCurrency;
-    return DropdownButton<String>(
-      value: currentValue,
-      dropdownColor: AppColors.navCapsule,
-      style: const TextStyle(color: Colors.white, fontSize: 24),
-      underline: Container(height: 1, color: Colors.white24),
-      items: _currencies.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
-      onChanged: (val) {
-        if (val != null) {
-          setState(() {
-            if (isFrom) _fromCurrency = val;
-            else _toCurrency = val;
-            _calculate();
-          });
-        }
-      },
     );
   }
 }

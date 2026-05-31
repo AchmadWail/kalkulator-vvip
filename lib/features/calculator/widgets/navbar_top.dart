@@ -1,34 +1,50 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../unit_converter/screens/unit_screen.dart';
-import '../../currency_converter/screens/currency_screen.dart';
+import '../../converters/screens/unit_converter_screen.dart';
+import '../../converters/screens/currency_converter_screen.dart';
 import '../../history/screens/history_screen.dart';
+import '../../info_modal/widgets/info_modal_widget.dart';
 
 class NavbarTop extends StatelessWidget {
   const NavbarTop({Key? key}) : super(key: key);
 
-  void _showSnack(BuildContext context, String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  void _showInfo(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => InfoModalWidget(),
+    );
   }
 
-  Widget _buildNavIcon(BuildContext context, String assetPath, String msg, double size, {Widget? navigateTo}) {
+  Widget _buildNavIcon(BuildContext context, IconData icon, String msg, double size, {Widget? navigateTo, bool isSelected = false}) {
+    Widget iconWidget = Icon(
+      icon,
+      size: size,
+      color: isSelected ? AppColors.equalsButton : AppColors.navbarIcon.withOpacity(0.5),
+    );
+
+    if (isSelected) {
+      iconWidget = Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.equalsButton.withOpacity(0.3), width: 1),
+        ),
+        child: iconWidget,
+      );
+    }
+
     return InkWell(
       onTap: () {
         if (navigateTo != null) {
           Navigator.push(context, MaterialPageRoute(builder: (_) => navigateTo));
         } else {
-          _showSnack(context, msg);
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
         }
       },
-      borderRadius: BorderRadius.circular(size),
+      borderRadius: BorderRadius.circular(30),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0), 
-        child: Image.asset(
-          assetPath, 
-          width: size, 
-          height: size, 
-          color: Colors.white60,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        child: iconWidget,
       ),
     );
   }
@@ -36,25 +52,40 @@ class NavbarTop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    double calculatedSize = screenWidth * 0.05; 
-    final iconSize = calculatedSize.clamp(14.0, 22.0);
+    double calculatedSize = screenWidth * 0.05;
+    final iconSize = calculatedSize.clamp(18.0, 24.0);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Left side: Question mark in a capsule
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.navCapsule,
-              borderRadius: BorderRadius.circular(30),
+          // Left side: Question mark in a circle
+          InkWell(
+            onTap: () => _showInfo(context),
+            borderRadius: BorderRadius.circular(30),
+            child: Container(
+              width: 44,
+              height: 44,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.navCapsule,
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                '?',
+                style: TextStyle(
+                  color: AppColors.navbarIcon,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
-            child: _buildNavIcon(context, 'assets/icons/icon_question.png', 'Info: Fitur tersembunyi tersedia.', iconSize),
           ),
           
-          // Right side: Clock, $, Ruler in a single capsule
+          // Right side: Icons in a capsule
           Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             decoration: BoxDecoration(
               color: AppColors.navCapsule,
               borderRadius: BorderRadius.circular(30),
@@ -62,9 +93,9 @@ class NavbarTop extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildNavIcon(context, 'assets/icons/icon_clock.png', 'Riwayat Kalkulator', iconSize, navigateTo: const HistoryScreen()),
-                _buildNavIcon(context, 'assets/icons/icon_dollar.png', 'Konverter Mata Uang', iconSize, navigateTo: const CurrencyScreen()),
-                _buildNavIcon(context, 'assets/icons/icon_ruler.png', 'Konverter Satuan', iconSize, navigateTo: const UnitScreen()),
+                _buildNavIcon(context, Icons.access_time, 'Riwayat', iconSize, navigateTo: const HistoryScreen()),
+                _buildNavIcon(context, Icons.monetization_on_outlined, 'Mata Uang', iconSize, navigateTo: const CurrencyConverterScreen(), isSelected: true),
+                _buildNavIcon(context, Icons.straighten, 'Satuan', iconSize, navigateTo: const UnitConverterScreen()),
               ],
             ),
           )
@@ -73,3 +104,4 @@ class NavbarTop extends StatelessWidget {
     );
   }
 }
+

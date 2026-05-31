@@ -47,6 +47,8 @@ class CalculatorLogic {
       _updatePreview();
     } else {
       // It's a number or comma/dot
+      if (buttonText == 'SCI') return;
+      
       if (_justCalculated) {
         _expression = '';
         _justCalculated = false;

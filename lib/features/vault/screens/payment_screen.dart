@@ -10,40 +10,23 @@ class PaymentScreen extends StatelessWidget {
 
   final String danaNumber = "081359070793";
 
-  Future<void> _processPayment(BuildContext context) async {
-    // Gunakan skema web URL DANA app-link yang akan otomatis me-redirect ke aplikasi DANA
-    // Format link.dana.id sering digunakan untuk direct transfer
-    final Uri danaUri = Uri.parse('https://link.dana.id/mme?phone=$danaNumber&amount=15000');
-    
-    try {
-      if (await canLaunchUrl(danaUri)) {
-        await launchUrl(danaUri, mode: LaunchMode.externalApplication); // Force external
-      } else {
-        // Fallback ke skema dana:// murni jika app-link browser diblokir
-        await launchUrl(Uri.parse('dana://pay?amount=15000&note=VVIP_081359070793'), mode: LaunchMode.externalApplication);
-      }
-    } catch (e) {
-      debugPrint('DANA app tidak ditemukan: $e');
+  void _payAndUnlock(BuildContext context) async {
+    // Salin nomor
+    await Clipboard.setData(ClipboardData(text: danaNumber));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nomor DANA disalin!')));
+
+    // Buka DANA
+    final url = Uri.parse("dana://pay?amount=15000&note=KalkulatorVIP");
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
     }
 
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Membuka DANA... Silakan transfer Rp 15.000 ke $danaNumber'),
-          backgroundColor: Colors.blueAccent,
-        )
-      );
-    }
-  }
-
-  Future<void> _unlockVip(BuildContext context) async {
-    // Fitur rahasia admin: Bypass tekan lama
+    // Beri akses VIP
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('is_vip_unlocked', true);
-    
+
     if (context.mounted) {
-       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Bypass VIP Berhasil!')));
-       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const VaultScreen()));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const VaultScreen(isVip: true)));
     }
   }
 
@@ -51,109 +34,31 @@ class PaymentScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('VVIP Access', style: TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold)), // Emas
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFFFFD700)),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("Premium Access"), backgroundColor: Colors.black),
       body: Center(
-        child: SingleChildScrollView(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xFF2A2A2A),
-                  AppColors.navCapsule,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: const Color(0xFFFFD700).withOpacity(0.3), width: 2), // Border Emas
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFFFD700).withOpacity(0.1),
-                  blurRadius: 30,
-                  spreadRadius: 5,
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.star, size: 80, color: Colors.amber),
+              const SizedBox(height: 20),
+              const Text("Akses Vault VIP", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.amber)),
+              const SizedBox(height: 20),
+              const Text("Harga: Rp 15.000", style: TextStyle(fontSize: 20)),
+              const SizedBox(height: 10),
+              Text("Kirim DANA ke: $danaNumber", style: const TextStyle(fontSize: 18, color: Colors.white70)),
+              const SizedBox(height: 40),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))
                 ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                GestureDetector(
-                  onLongPress: () => _unlockVip(context), // Rahasia admin
-                  child: const Icon(Icons.workspace_premium, color: Color(0xFFFFD700), size: 100),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Akses Eksklusif',
-                  style: TextStyle(
-                    color: Colors.white, 
-                    fontSize: 28, 
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Brankas ini dilindungi enkripsi VVIP. Tingkatkan akun Anda untuk membuka penyimpanan file tanpa batas dan tanpa iklan selamanya.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white70, fontSize: 15, height: 1.5),
-                ),
-                const SizedBox(height: 32),
-                
-                // Info Harga
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                  decoration: BoxDecoration(
-                    color: Colors.black45,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white12),
-                  ),
-                  child: Column(
-                    children: [
-                      const Text('Biaya Akses VVIP', style: TextStyle(color: Colors.white54, fontSize: 14)),
-                      const SizedBox(height: 8),
-                      const Text('Rp 15.000', style: TextStyle(color: Color(0xFFFFD700), fontSize: 36, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 16),
-                      const Divider(color: Colors.white12),
-                      const SizedBox(height: 16),
-                      const Text('Transfer ke DANA:', style: TextStyle(color: Colors.white54, fontSize: 14)),
-                      const SizedBox(height: 4),
-                      Text(danaNumber, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 2)),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 32),
-                
-                SizedBox(
-                  width: double.infinity,
-                  height: 60,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF108EE9), // Warna Biru DANA
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      elevation: 8,
-                    ),
-                    onPressed: () => _processPayment(context),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.payment, color: Colors.white),
-                        SizedBox(width: 12),
-                        Text('Bayar Otomatis via DANA', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+                onPressed: () => _payAndUnlock(context),
+                child: const Text("Bayar dengan DANA", style: TextStyle(fontSize: 18, color: Colors.white)),
+              )
+            ],
           ),
         ),
       ),

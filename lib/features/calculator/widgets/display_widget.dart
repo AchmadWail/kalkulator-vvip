@@ -19,24 +19,23 @@ class DisplayWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Flexible(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.bottomRight,
-              child: Text(
-                displayValue,
-                style: const TextStyle(
-                  color: AppColors.numberText,
-                  fontSize: 80,
-                  fontWeight: FontWeight.w300,
-                  height: 1.1, // Agar spasi vertikal rapat
+          if (previewValue.isNotEmpty) ...[
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.bottomRight,
+                child: Text(
+                  displayValue,
+                  style: const TextStyle(
+                    color: AppColors.previewText,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  maxLines: 1,
                 ),
-                maxLines: 1,
               ),
             ),
-          ),
-          if (previewValue.isNotEmpty) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             Flexible(
               child: FittedBox(
                 fit: BoxFit.scaleDown,
@@ -44,9 +43,27 @@ class DisplayWidget extends StatelessWidget {
                 child: Text(
                   previewValue,
                   style: const TextStyle(
-                    color: AppColors.previewText,
-                    fontSize: 40,
-                    fontWeight: FontWeight.w400,
+                    color: AppColors.numberText,
+                    fontSize: 80,
+                    fontWeight: FontWeight.w300,
+                    height: 1.1,
+                  ),
+                  maxLines: 1,
+                ),
+              ),
+            ),
+          ] else ...[
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.bottomRight,
+                child: Text(
+                  displayValue,
+                  style: const TextStyle(
+                    color: AppColors.numberText,
+                    fontSize: 80,
+                    fontWeight: FontWeight.w300,
+                    height: 1.1,
                   ),
                   maxLines: 1,
                 ),
@@ -54,6 +71,7 @@ class DisplayWidget extends StatelessWidget {
             ),
           ]
         ],
+
       ),
     );
   }
