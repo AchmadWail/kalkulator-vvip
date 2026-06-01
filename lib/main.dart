@@ -5,6 +5,7 @@ import 'features/calculator/providers/calculator_provider.dart';
 import 'features/history/providers/history_provider.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MultiProvider(
       providers: [

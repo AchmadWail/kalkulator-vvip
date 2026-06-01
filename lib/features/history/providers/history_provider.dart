@@ -13,8 +13,17 @@ class HistoryProvider with ChangeNotifier {
 
   void addHistory(String expression, String result) {
     _history.insert(0, HistoryModel(expression: expression, result: result, timestamp: DateTime.now()));
+    if (_history.length > 100) _history.removeLast(); // Keep max 100
     _saveHistory();
     notifyListeners();
+  }
+
+  void removeAt(int index) {
+    if (index >= 0 && index < _history.length) {
+      _history.removeAt(index);
+      _saveHistory();
+      notifyListeners();
+    }
   }
 
   void clearHistory() {

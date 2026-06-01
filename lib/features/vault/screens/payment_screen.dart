@@ -191,7 +191,7 @@ class PaymentScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w900,
-              color: AppColors.numberText,
+              color: Colors.white,
               letterSpacing: 0.5,
             ),
           ),
@@ -200,7 +200,7 @@ class PaymentScreen extends StatelessWidget {
             "Buka fitur tersembunyi tanpa batas. Amankan foto, video, dokumen, dan audio pribadi Anda.",
             style: TextStyle(
               fontSize: 14,
-              color: AppColors.numberText.withOpacity(0.7),
+              color: Colors.white70,
               height: 1.5,
             ),
           ),
@@ -222,7 +222,7 @@ class PaymentScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.w900,
-                  color: AppColors.numberText,
+                  color: Colors.white,
                   height: 1,
                 ),
               ),
@@ -231,7 +231,7 @@ class PaymentScreen extends StatelessWidget {
                 "/ selamanya",
                 style: TextStyle(
                   fontSize: 14,
-                  color: AppColors.numberText.withOpacity(0.5),
+                  color: Colors.white54,
                 ),
               ),
             ],

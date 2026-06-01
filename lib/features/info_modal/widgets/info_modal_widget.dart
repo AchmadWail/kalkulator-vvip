@@ -8,128 +8,135 @@ class InfoModalWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
       child: Dialog(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         child: Container(
-          padding: EdgeInsets.all(24),
+          padding: EdgeInsets.all(28),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(28),
             gradient: LinearGradient(
               colors: [
-                Color(0xFF2C2C2E).withOpacity(0.85),
-                Color(0xFF1C1C1E).withOpacity(0.95),
+                AppColors.surface.withOpacity(0.95),
+                AppColors.background.withOpacity(0.98),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             border: Border.all(
-              color: AppColors.equalsButton.withOpacity(0.3),
+              color: AppColors.accentPurple.withOpacity(0.2),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.5),
-                blurRadius: 20,
-                offset: Offset(0, 10),
+                color: Colors.black.withOpacity(0.4),
+                blurRadius: 30,
+                offset: Offset(0, 15),
               ),
               BoxShadow(
-                color: AppColors.equalsButton.withOpacity(0.15),
-                blurRadius: 30,
-                spreadRadius: -5,
+                color: AppColors.accentPurple.withOpacity(0.1),
+                blurRadius: 40,
+                spreadRadius: -10,
                 offset: Offset(0, -5),
               ),
             ],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Icon Header
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+              // Animated gradient icon
               Container(
-                padding: EdgeInsets.all(16),
+                padding: EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: AppColors.equalsButton.withOpacity(0.15),
+                  gradient: LinearGradient(
+                    colors: [AppColors.accentPurple.withOpacity(0.15), AppColors.accentCyan.withOpacity(0.15)],
+                  ),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.vpn_key_rounded,
-                  color: AppColors.equalsButton,
-                  size: 36,
+                child: ShaderMask(
+                  shaderCallback: (bounds) => LinearGradient(
+                    colors: [AppColors.accentPurple, AppColors.accentCyan],
+                  ).createShader(bounds),
+                  child: Icon(Icons.vpn_key_rounded, color: Colors.white, size: 36),
                 ),
               ),
-              SizedBox(height: 20),
-              
-              // Title
-              Text(
-                'Akses Rahasia',
-                style: TextStyle(
-                  color: AppColors.numberText,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
+              SizedBox(height: 22),
+              ShaderMask(
+                shaderCallback: (bounds) => LinearGradient(
+                  colors: [AppColors.numberText, AppColors.accentPurple],
+                ).createShader(bounds),
+                child: Text(
+                  'Akses Rahasia',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
-              SizedBox(height: 12),
-              
-              // Description
+              SizedBox(height: 14),
               Text(
-                'Kalkulator ini memiliki fitur brankas (Vault) tersembunyi. Gunakan kode berikut pada kalkulator:',
+                'Kalkulator ini memiliki fitur brankas tersembunyi. Gunakan kode di bawah:',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppColors.numberText.withOpacity(0.7),
-                  fontSize: 14,
-                  height: 1.5,
+                  color: AppColors.numberText.withOpacity(0.6),
+                  fontSize: 13,
+                  height: 1.6,
                 ),
               ),
               SizedBox(height: 24),
-              
-              // Secret Code Items
               _buildCodeItem(
                 code: '1+1=',
-                description: 'Akses Vault (Lihat Saja)',
+                description: 'Buka Vault (Mode Gratis)',
                 icon: Icons.visibility_outlined,
-                color: Colors.cyanAccent,
+                color: AppColors.accentCyan,
               ),
-              SizedBox(height: 12),
+              SizedBox(height: 10),
               _buildCodeItem(
                 code: '99+99=',
-                description: 'Akses Vault (VIP Penuh)',
-                icon: Icons.star_rounded,
-                color: Colors.amber,
+                description: 'Buka Vault (VIP Penuh)',
+                icon: Icons.diamond_rounded,
+                color: AppColors.accentOrange,
               ),
-              
-              SizedBox(height: 32),
-              
-              // Close Button
+              SizedBox(height: 18),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.equalsButton,
-                    foregroundColor: AppColors.background,
                     padding: EdgeInsets.symmetric(vertical: 16),
                     elevation: 0,
-                    shape: RoundedRectangleBorder(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    backgroundColor: Colors.transparent,
+                  ),
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(colors: AppColors.primaryGradient),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                  ),
-                  child: Text(
-                    'Mengerti',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.symmetric(vertical: 14),
+                      child: Text(
+                        'Mengerti',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
             ],
           ),
+        ),
         ),
       ),
     );
@@ -142,16 +149,23 @@ class InfoModalWidget extends StatelessWidget {
     required Color color,
   }) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.numberText.withOpacity(0.05)),
+        color: color.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withOpacity(0.12)),
       ),
       child: Row(
         children: [
-          Icon(icon, color: color, size: 24),
-          SizedBox(width: 16),
+          Container(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,17 +174,17 @@ class InfoModalWidget extends StatelessWidget {
                   code,
                   style: TextStyle(
                     color: color,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.5,
                   ),
                 ),
                 SizedBox(height: 2),
                 Text(
                   description,
                   style: TextStyle(
-                    color: AppColors.numberText.withOpacity(0.6),
-                    fontSize: 12,
+                    color: AppColors.numberText.withOpacity(0.5),
+                    fontSize: 11,
                   ),
                 ),
               ],
