@@ -5,6 +5,11 @@ import '../../converters/screens/currency_converter_screen.dart';
 import '../../history/screens/history_screen.dart';
 import '../../info_modal/widgets/info_modal_widget.dart';
 import '../../settings/screens/settings_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../health_calculator/screens/health_calculator_screen.dart';
+import '../../split_bill/screens/split_bill_screen.dart';
+import '../../time_matrix/screens/time_matrix_screen.dart';
+import '../../vault/screens/payment_screen.dart';
 
 class NavbarTop extends StatelessWidget {
   NavbarTop({Key? key}) : super(key: key);
@@ -43,11 +48,11 @@ class NavbarTop extends StatelessWidget {
     );
   }
 
-  Widget _buildNavIcon(BuildContext context, IconData icon, String msg, double size, {Widget? navigateTo, bool isSelected = false}) {
+  Widget _buildNavIcon(BuildContext context, IconData icon, String msg, double size, {Widget? navigateTo, bool isSelected = false, VoidCallback? onTap}) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {
+        onTap: onTap ?? () {
           if (navigateTo != null) {
             _navigateWithSlide(context, navigateTo);
           } else {
@@ -124,20 +129,58 @@ class NavbarTop extends StatelessWidget {
             ],
           ),
           // Right capsule
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.navCapsule,
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: AppColors.navbarIcon.withOpacity(0.08)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
+          Flexible(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.navCapsule,
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: AppColors.navbarIcon.withOpacity(0.08)),
+              ),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildNavIcon(context, Icons.hourglass_bottom, 'Time Matrix (VVIP)', iconSize, onTap: () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      final isVip = prefs.getBool('is_vip_unlocked') ?? false;
+                      if (context.mounted) {
+                        if (isVip) {
+                          _navigateWithSlide(context, TimeMatrixScreen());
+                        } else {
+                          _navigateWithSlide(context, PaymentScreen());
+                        }
+                      }
+                    }),
+                    _buildNavIcon(context, Icons.monitor_heart, 'Kesehatan (VVIP)', iconSize, onTap: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  final isVip = prefs.getBool('is_vip_unlocked') ?? false;
+                  if (context.mounted) {
+                    if (isVip) {
+                      _navigateWithSlide(context, HealthCalculatorScreen());
+                    } else {
+                      _navigateWithSlide(context, PaymentScreen());
+                    }
+                  }
+                }),
+                _buildNavIcon(context, Icons.receipt_long, 'Split Bill (VVIP)', iconSize, onTap: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  final isVip = prefs.getBool('is_vip_unlocked') ?? false;
+                  if (context.mounted) {
+                    if (isVip) {
+                      _navigateWithSlide(context, SplitBillScreen());
+                    } else {
+                      _navigateWithSlide(context, PaymentScreen());
+                    }
+                  }
+                }),
                 _buildNavIcon(context, Icons.access_time_rounded, 'Riwayat', iconSize, navigateTo: HistoryScreen()),
                 _buildNavIcon(context, Icons.currency_exchange_rounded, 'Valuta', iconSize, navigateTo: CurrencyConverterScreen(), isSelected: true),
                 _buildNavIcon(context, Icons.straighten_rounded, 'Satuan', iconSize, navigateTo: UnitConverterScreen()),
-              ],
+                  ],
+                ),
+              ),
             ),
           ),
         ],

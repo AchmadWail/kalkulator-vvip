@@ -76,7 +76,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> with 
       setState(() {
         _isLoading = false;
         _units = ["USD", "IDR"];
-        _rates = {"USD": 1.0, "IDR": 16000.0};
+        _rates = {"USD": 1.0, "IDR": 18095.70};
         _lastUpdated = "Fallback";
       });
       _calculate();
@@ -93,6 +93,9 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> with 
     ratesMap.forEach((key, value) {
       parsedRates[key] = (value as num).toDouble();
     });
+
+    // Enforce custom IDR rate
+    parsedRates['IDR'] = 18095.70;
 
     setState(() {
       _rates = parsedRates;

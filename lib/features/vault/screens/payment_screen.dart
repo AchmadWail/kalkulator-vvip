@@ -55,10 +55,13 @@ class PaymentScreen extends StatelessWidget {
     await prefs.setBool('is_vip_unlocked', true);
 
     if (context.mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => VaultScreen(isVip: true)),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Pembayaran berhasil! Akses VVIP telah terbuka.'),
+          backgroundColor: Colors.green,
+        ),
       );
+      Navigator.pop(context);
     }
   }
 

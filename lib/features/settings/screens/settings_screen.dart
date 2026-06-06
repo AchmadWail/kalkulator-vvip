@@ -6,8 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../history/providers/history_provider.dart';
 import '../../../app.dart' as import_app;
 import '../../converters/screens/base_converter_screen.dart';
-import '../../graphing/screens/cyber_visualizer_screen.dart';
-
+import '../../cryptography/screens/cipher_screen.dart';
 class SettingsScreen extends StatefulWidget {
   SettingsScreen({Key? key}) : super(key: key);
 
@@ -266,10 +265,10 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                     ),
                     _divider(),
                     ListTile(
-                      leading: _buildIconBox(Icons.hub_rounded, AppColors.accentCyan),
+                      leading: _buildIconBox(Icons.lock_person_rounded, AppColors.accentPurple),
                       title: Row(
                         children: [
-                          Flexible(child: Text('VVIP Cyber Visualizer', style: TextStyle(color: AppColors.numberText))),
+                          Flexible(child: Text('Enkripsi Pesan Rahasia', style: TextStyle(color: AppColors.numberText))),
                           if (!_isVip) ...[
                             SizedBox(width: 8),
                             Container(
@@ -298,7 +297,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                           );
                           return;
                         }
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => CyberVisualizerScreen()));
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => CipherScreen()));
                       },
                     ),
                   ],
