@@ -7,6 +7,10 @@ import '../../history/providers/history_provider.dart';
 import '../../../app.dart' as import_app;
 import '../../converters/screens/base_converter_screen.dart';
 import '../../cryptography/screens/cipher_screen.dart';
+import '../../health_calculator/screens/health_calculator_screen.dart';
+import '../../split_bill/screens/split_bill_screen.dart';
+import '../../time_matrix/screens/time_matrix_screen.dart';
+import '../../vault/screens/payment_screen.dart';
 class SettingsScreen extends StatefulWidget {
   SettingsScreen({Key? key}) : super(key: key);
 
@@ -16,10 +20,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProviderStateMixin {
   bool _isVip = false;
-  bool _soundEnabled = true;
-  bool _hapticEnabled = true;
   bool _isDarkMode = true;
-  String _defaultCurrency = 'IDR';
   late AnimationController _animController;
 
   @override
@@ -42,10 +43,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _isVip = prefs.getBool('is_vip_unlocked') ?? false;
-      _soundEnabled = prefs.getBool('setting_sound') ?? true;
-      _hapticEnabled = prefs.getBool('setting_haptic') ?? true;
       _isDarkMode = prefs.getBool('setting_dark_mode') ?? true;
-      _defaultCurrency = prefs.getString('setting_currency') ?? 'IDR';
     });
   }
 
@@ -151,7 +149,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                 _buildAnimatedItem(0, _buildSectionHeader('Akun & Status')),
                 _buildAnimatedItem(1, _buildVipStatusCard()),
                 SizedBox(height: 24),
-                _buildAnimatedItem(2, _buildSectionHeader('Preferensi Aplikasi')),
+                _buildAnimatedItem(2, _buildSectionHeader('Preferensi & Data')),
                 _buildAnimatedItem(3, _buildSettingsCard(
                   children: [
                     _buildSwitchTile(
@@ -166,55 +164,6 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                       },
                     ),
                     _divider(),
-                    _buildSwitchTile(
-                      icon: Icons.volume_up_rounded,
-                      iconColor: AppColors.accentCyan,
-                      title: 'Suara Tombol',
-                      value: _soundEnabled,
-                      onChanged: (val) {
-                        setState(() => _soundEnabled = val);
-                        _toggleSetting('setting_sound', val);
-                      },
-                    ),
-                    _divider(),
-                    _buildSwitchTile(
-                      icon: Icons.vibration_rounded,
-                      iconColor: AppColors.accentOrange,
-                      title: 'Getaran (Haptic)',
-                      value: _hapticEnabled,
-                      onChanged: (val) {
-                        setState(() => _hapticEnabled = val);
-                        _toggleSetting('setting_haptic', val);
-                      },
-                    ),
-                    _divider(),
-                    ListTile(
-                      leading: _buildIconBox(Icons.attach_money_rounded, AppColors.accentGreen),
-                      title: Text('Mata Uang Default', style: TextStyle(color: AppColors.numberText)),
-                      trailing: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          dropdownColor: AppColors.surface,
-                          value: _defaultCurrency,
-                          style: TextStyle(color: AppColors.numberText.withOpacity(0.70), fontSize: 14),
-                          items: ['IDR', 'USD', 'EUR', 'MYR', 'SGD', 'JPY', 'GBP'].map((String value) {
-                            return DropdownMenuItem<String>(value: value, child: Text(value));
-                          }).toList(),
-                          onChanged: (newVal) async {
-                            if (newVal != null) {
-                              setState(() => _defaultCurrency = newVal);
-                              final prefs = await SharedPreferences.getInstance();
-                              await prefs.setString('setting_currency', newVal);
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                )),
-                SizedBox(height: 24),
-                _buildAnimatedItem(4, _buildSectionHeader('Data & Penyimpanan')),
-                _buildAnimatedItem(5, _buildSettingsCard(
-                  children: [
                     ListTile(
                       leading: _buildIconBox(Icons.history_rounded, AppColors.accentPink),
                       title: Text('Hapus Riwayat Kalkulator', style: TextStyle(color: AppColors.numberText)),
@@ -250,14 +199,10 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                         color: _isVip ? AppColors.numberText.withOpacity(0.3) : Colors.amber.withOpacity(0.5),
                         size: _isVip ? 24 : 20,
                       ),
-                      onTap: () {
+                      onTap: () async {
                         if (!_isVip) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Fitur eksklusif ini hanya untuk VVIP Member. Ketik 99+99= untuk upgrade!'),
-                              backgroundColor: Colors.amber.shade800,
-                            ),
-                          );
+                          await Navigator.push(context, MaterialPageRoute(builder: (_) => PaymentScreen()));
+                          _loadSettings();
                           return;
                         }
                         Navigator.push(context, MaterialPageRoute(builder: (_) => BaseConverterScreen()));
@@ -287,17 +232,109 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                         color: _isVip ? AppColors.numberText.withOpacity(0.3) : Colors.amber.withOpacity(0.5),
                         size: _isVip ? 24 : 20,
                       ),
-                      onTap: () {
+                      onTap: () async {
                         if (!_isVip) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Fitur eksklusif ini hanya untuk VVIP Member. Ketik 99+99= untuk upgrade!'),
-                              backgroundColor: Colors.amber.shade800,
-                            ),
-                          );
+                          await Navigator.push(context, MaterialPageRoute(builder: (_) => PaymentScreen()));
+                          _loadSettings();
                           return;
                         }
                         Navigator.push(context, MaterialPageRoute(builder: (_) => CipherScreen()));
+                      },
+                    ),
+                    _divider(),
+                    ListTile(
+                      leading: _buildIconBox(Icons.hourglass_bottom, AppColors.accentOrange),
+                      title: Row(
+                        children: [
+                          Flexible(child: Text('Time Matrix', style: TextStyle(color: AppColors.numberText))),
+                          if (!_isVip) ...[
+                            SizedBox(width: 8),
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(colors: [Colors.amber.shade700, Colors.orange.shade600]),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text('VVIP', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ],
+                      ),
+                      trailing: Icon(
+                        _isVip ? Icons.chevron_right_rounded : Icons.lock_outline_rounded,
+                        color: _isVip ? AppColors.numberText.withOpacity(0.3) : Colors.amber.withOpacity(0.5),
+                        size: _isVip ? 24 : 20,
+                      ),
+                      onTap: () {
+                        if (!_isVip) {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => PaymentScreen()));
+                          return;
+                        }
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => TimeMatrixScreen()));
+                      },
+                    ),
+                    _divider(),
+                    ListTile(
+                      leading: _buildIconBox(Icons.monitor_heart, AppColors.accentPink),
+                      title: Row(
+                        children: [
+                          Flexible(child: Text('Kesehatan', style: TextStyle(color: AppColors.numberText))),
+                          if (!_isVip) ...[
+                            SizedBox(width: 8),
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(colors: [Colors.amber.shade700, Colors.orange.shade600]),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text('VVIP', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ],
+                      ),
+                      trailing: Icon(
+                        _isVip ? Icons.chevron_right_rounded : Icons.lock_outline_rounded,
+                        color: _isVip ? AppColors.numberText.withOpacity(0.3) : Colors.amber.withOpacity(0.5),
+                        size: _isVip ? 24 : 20,
+                      ),
+                      onTap: () {
+                        if (!_isVip) {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => PaymentScreen()));
+                          return;
+                        }
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => HealthCalculatorScreen()));
+                      },
+                    ),
+                    _divider(),
+                    ListTile(
+                      leading: _buildIconBox(Icons.receipt_long, AppColors.accentCyan),
+                      title: Row(
+                        children: [
+                          Flexible(child: Text('Split Bill', style: TextStyle(color: AppColors.numberText))),
+                          if (!_isVip) ...[
+                            SizedBox(width: 8),
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(colors: [Colors.amber.shade700, Colors.orange.shade600]),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text('VVIP', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ],
+                      ),
+                      trailing: Icon(
+                        _isVip ? Icons.chevron_right_rounded : Icons.lock_outline_rounded,
+                        color: _isVip ? AppColors.numberText.withOpacity(0.3) : Colors.amber.withOpacity(0.5),
+                        size: _isVip ? 24 : 20,
+                      ),
+                      onTap: () {
+                        if (!_isVip) {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => PaymentScreen()));
+                          return;
+                        }
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => SplitBillScreen()));
                       },
                     ),
                   ],
@@ -384,66 +421,93 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
   }
 
   Widget _buildVipStatusCard() {
-    return Container(
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: _isVip
-              ? [Colors.amber.shade800.withOpacity(0.2), Colors.amber.shade900.withOpacity(0.08)]
-              : [AppColors.surface, AppColors.surface],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: _isVip ? Colors.amber.withOpacity(0.4) : AppColors.numberText.withOpacity(0.06),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              gradient: _isVip
-                  ? LinearGradient(colors: [Colors.amber.withOpacity(0.2), Colors.orange.withOpacity(0.15)])
-                  : null,
-              color: _isVip ? null : AppColors.numberText.withOpacity(0.06),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              _isVip ? Icons.diamond_rounded : Icons.lock_outline_rounded,
-              color: _isVip ? Colors.amber : AppColors.previewText,
-              size: 28,
-            ),
+    return GestureDetector(
+      onTap: () async {
+        if (!_isVip) {
+          await Navigator.push(context, MaterialPageRoute(builder: (_) => PaymentScreen()));
+          _loadSettings();
+        }
+      },
+      child: Container(
+        padding: EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: _isVip
+                ? [Colors.amber.shade800.withOpacity(0.2), Colors.amber.shade900.withOpacity(0.08)]
+                : [AppColors.surface, AppColors.surface],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _isVip ? 'VVIP Member ✨' : 'Standar (Free)',
-                  style: TextStyle(
-                    color: _isVip ? Colors.amber : AppColors.numberText,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  _isVip
-                      ? 'Akses penuh ke semua fitur & vault.'
-                      : 'Ketik 99+99= di kalkulator untuk upgrade.',
-                  style: TextStyle(
-                    color: AppColors.numberText.withOpacity(0.5),
-                    fontSize: 12,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: _isVip ? Colors.amber.withOpacity(0.4) : AppColors.numberText.withOpacity(0.06),
           ),
-        ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                gradient: _isVip
+                    ? LinearGradient(colors: [Colors.amber.withOpacity(0.2), Colors.orange.withOpacity(0.15)])
+                    : null,
+                color: _isVip ? null : AppColors.numberText.withOpacity(0.06),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _isVip ? Icons.diamond_rounded : Icons.lock_outline_rounded,
+                color: _isVip ? Colors.amber : AppColors.previewText,
+                size: 28,
+              ),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _isVip ? 'VVIP Member ✨' : 'Standar (Free)',
+                    style: TextStyle(
+                      color: _isVip ? Colors.amber : AppColors.numberText,
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    _isVip
+                        ? 'Akses penuh ke semua fitur & vault.'
+                        : 'Ketuk di sini untuk upgrade.',
+                    style: TextStyle(
+                      color: AppColors.numberText.withOpacity(0.5),
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (!_isVip)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: [Colors.amber.shade600, Colors.orange.shade700]),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(color: Colors.amber.withOpacity(0.2), blurRadius: 4, offset: Offset(0, 2)),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('UPGRADE', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                    SizedBox(width: 4),
+                    Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 10),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

@@ -55,13 +55,97 @@ class PaymentScreen extends StatelessWidget {
     await prefs.setBool('is_vip_unlocked', true);
 
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Pembayaran berhasil! Akses VVIP telah terbuka.'),
-          backgroundColor: Colors.green,
-        ),
+      showGeneralDialog(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: Colors.black87,
+        transitionDuration: Duration(milliseconds: 400),
+        pageBuilder: (context, anim1, anim2) {
+          return Center(
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                padding: EdgeInsets.all(32),
+                margin: EdgeInsets.symmetric(horizontal: 40),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.green.withOpacity(0.5)),
+                  boxShadow: [
+                    BoxShadow(color: Colors.green.withOpacity(0.2), blurRadius: 30, spreadRadius: 5)
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      duration: Duration(milliseconds: 800),
+                      curve: Curves.elasticOut,
+                      builder: (context, value, child) {
+                        return Transform.scale(
+                          scale: value,
+                          child: Container(
+                            padding: EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.check_circle_rounded, color: Colors.greenAccent, size: 64),
+                          ),
+                        );
+                      },
+                    ),
+                    SizedBox(height: 24),
+                    Text(
+                      'Pembayaran Sukses!',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    Text(
+                      'Akses VVIP Anda telah sepenuhnya terbuka.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white70,
+                      ),
+                    ),
+                    SizedBox(height: 30),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                          padding: EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context); // close dialog
+                          Navigator.pop(context); // close payment screen
+                        },
+                        child: Text('Lanjutkan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+        transitionBuilder: (context, anim1, anim2, child) {
+          return Opacity(
+            opacity: anim1.value,
+            child: Transform.scale(
+              scale: 0.8 + (0.2 * anim1.value),
+              child: child,
+            ),
+          );
+        },
       );
-      Navigator.pop(context);
     }
   }
 

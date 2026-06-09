@@ -55,7 +55,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> with 
 
   Future<void> _fetchRates() async {
     try {
-      final res = await http.get(Uri.parse('https://api.frankfurter.app/latest?from=USD'));
+      final res = await http.get(Uri.parse('https://api.exchangerate-api.com/v4/latest/USD'));
       if (res.statusCode == 200) {
         _parseData(res.body);
         _lastUpdated = "Live";
