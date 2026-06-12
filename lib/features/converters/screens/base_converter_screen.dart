@@ -25,7 +25,22 @@ class _BaseConverterScreenState extends State<BaseConverterScreen> {
     "Heksadesimal": 16,
   };
 
+  String _formatSpaced(String text, int groupSize, {String separator = ' '}) {
+    if (text == 'Error' || text == '0' || text.isEmpty) return text;
+    bool isNegative = text.startsWith('-');
+    if (isNegative) text = text.substring(1);
+    
+    final rev = text.split('').reversed.join();
+    final chunks = <String>[];
+    for (int i = 0; i < rev.length; i += groupSize) {
+      chunks.add(rev.substring(i, (i + groupSize > rev.length) ? rev.length : i + groupSize));
+    }
+    String result = chunks.join(separator).split('').reversed.join();
+    return isNegative ? '-$result' : result;
+  }
+
   void _calculate(String value) {
+    value = value.replaceAll(' ', '').replaceAll('.', '').trim();
     if (value.isEmpty) {
       setState(() {
         _binaryResult = "0";
@@ -38,12 +53,12 @@ class _BaseConverterScreenState extends State<BaseConverterScreen> {
 
     try {
       int base = _baseMap[_inputBase]!;
-      int decimalValue = int.parse(value, radix: base);
+      BigInt decimalValue = BigInt.parse(value, radix: base);
       setState(() {
-        _binaryResult = decimalValue.toRadixString(2);
-        _octalResult = decimalValue.toRadixString(8);
-        _decimalResult = decimalValue.toString();
-        _hexResult = decimalValue.toRadixString(16).toUpperCase();
+        _binaryResult = _formatSpaced(decimalValue.toRadixString(2), 4);
+        _octalResult = _formatSpaced(decimalValue.toRadixString(8), 3);
+        _decimalResult = _formatSpaced(decimalValue.toString(), 3, separator: '.');
+        _hexResult = _formatSpaced(decimalValue.toRadixString(16).toUpperCase(), 4);
       });
     } catch (e) {
       setState(() {
@@ -108,6 +123,7 @@ class _BaseConverterScreenState extends State<BaseConverterScreen> {
                   SizedBox(height: 6),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.symmetric(vertical: 4),
                     child: Text(
                       value,
                       style: TextStyle(
@@ -116,6 +132,7 @@ class _BaseConverterScreenState extends State<BaseConverterScreen> {
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.5,
                         fontFamily: 'monospace',
+                        height: 1.2,
                       ),
                     ),
                   ),
@@ -220,12 +237,13 @@ class _BaseConverterScreenState extends State<BaseConverterScreen> {
                     child: TextField(
                       controller: _inputController,
                       keyboardType: TextInputType.text,
-                      style: TextStyle(color: AppColors.numberText, fontSize: 28, fontWeight: FontWeight.w600, fontFamily: 'monospace'),
+                      style: TextStyle(color: AppColors.numberText, fontSize: 28, fontWeight: FontWeight.w600, fontFamily: 'monospace', height: 1.2),
                       onChanged: _calculate,
                       decoration: InputDecoration(
                         border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: 4),
                         hintText: "Masukkan angka...",
-                        hintStyle: TextStyle(color: AppColors.numberText.withOpacity(0.2), fontSize: 20),
+                        hintStyle: TextStyle(color: AppColors.numberText.withOpacity(0.2), fontSize: 20, height: 1.2),
                       ),
                     ),
                   ),

@@ -77,7 +77,8 @@ class _UnitConverterScreenState extends State<UnitConverterScreen> with SingleTi
   }
 
   void _calculate() {
-    double value = double.tryParse(_inputController.text) ?? 0.0;
+    String cleanText = _inputController.text.replaceAll('.', '').replaceAll(',', '.');
+    double value = double.tryParse(cleanText) ?? 0.0;
     double outValue = 0.0;
 
     switch (_selectedCategory) {
@@ -100,10 +101,25 @@ class _UnitConverterScreenState extends State<UnitConverterScreen> with SingleTi
 
   String _formatResult(double v) {
     if (v == 0) return "0";
-    String s = v.toStringAsFixed(6).replaceAll(RegExp(r"([.]*0+)(?!.*\d)"), "");
-    if (s.endsWith('.')) s = s.substring(0, s.length - 1);
-    if (s.isEmpty) s = "0";
-    return s;
+    String str = v.toStringAsFixed(6);
+    List<String> parts = str.split('.');
+    String intPart = parts[0];
+    String decPart = parts.length > 1 ? parts[1] : '';
+
+    while (decPart.endsWith('0')) {
+      decPart = decPart.substring(0, decPart.length - 1);
+    }
+    
+    intPart = intPart.replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
+
+    if (decPart.isEmpty) {
+      return intPart;
+    } else {
+      return '$intPart,$decPart';
+    }
   }
 
   double _convertLength(double v, String from, String to) {
@@ -247,11 +263,12 @@ class _UnitConverterScreenState extends State<UnitConverterScreen> with SingleTi
                           child: TextField(
                             controller: _inputController,
                             keyboardType: TextInputType.numberWithOptions(decimal: true),
-                            style: TextStyle(color: AppColors.numberText, fontSize: 28, fontWeight: FontWeight.w500),
+                            style: TextStyle(color: AppColors.numberText, fontSize: 28, fontWeight: FontWeight.w500, height: 1.2),
                             decoration: InputDecoration(
                               border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(vertical: 4),
                               hintText: "Masukkan nilai",
-                              hintStyle: TextStyle(color: AppColors.previewText.withOpacity(0.5), fontSize: 20),
+                              hintStyle: TextStyle(color: AppColors.previewText.withOpacity(0.5), fontSize: 20, height: 1.2),
                             ),
                           ),
                         ),
@@ -293,13 +310,19 @@ class _UnitConverterScreenState extends State<UnitConverterScreen> with SingleTi
                               SizedBox(height: 8),
                               FittedBox(
                                 fit: BoxFit.scaleDown,
-                                child: ShaderMask(
-                                  shaderCallback: (bounds) => LinearGradient(
-                                    colors: [catInfo['color'] as Color, AppColors.accentPurple],
-                                  ).createShader(bounds),
-                                  child: Text(
-                                    "$_result",
-                                    style: TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.w700),
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                                  child: ShaderMask(
+                                    shaderCallback: (bounds) => LinearGradient(
+                                      colors: [catInfo['color'] as Color, AppColors.accentPurple],
+                                    ).createShader(bounds),
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                      child: Text(
+                                        "$_result",
+                                        style: TextStyle(color: Colors.white, fontSize: 48, fontWeight: FontWeight.w700, height: 1.2, letterSpacing: 1.5),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),

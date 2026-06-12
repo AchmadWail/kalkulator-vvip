@@ -108,7 +108,8 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> with 
   void _calculate() {
     if (_rates.isEmpty) return;
 
-    double value = double.tryParse(_inputController.text) ?? 0.0;
+    String cleanText = _inputController.text.replaceAll('.', '').replaceAll(',', '.');
+    double value = double.tryParse(cleanText) ?? 0.0;
     double inUsd = value / (_rates[_fromUnit] ?? 1.0);
     double outValue = inUsd * (_rates[_toUnit] ?? 1.0);
 
@@ -120,13 +121,26 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> with 
   }
 
   String _formatCurrency(double v) {
-    if (v >= 1000000) {
-      return v.toStringAsFixed(0).replaceAllMapped(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-        (Match m) => '${m[1]}.',
-      );
+    if (v == 0) return "0";
+    String str = v.toStringAsFixed(2);
+    List<String> parts = str.split('.');
+    String intPart = parts[0];
+    String decPart = parts.length > 1 ? parts[1] : '';
+
+    while (decPart.endsWith('0')) {
+      decPart = decPart.substring(0, decPart.length - 1);
     }
-    return v.toStringAsFixed(2);
+
+    intPart = intPart.replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
+
+    if (decPart.isEmpty) {
+      return intPart;
+    } else {
+      return '$intPart,$decPart';
+    }
   }
 
   void _swapCurrencies() {
@@ -230,11 +244,12 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> with 
                           child: TextField(
                             controller: _inputController,
                             keyboardType: TextInputType.numberWithOptions(decimal: true),
-                            style: TextStyle(color: AppColors.numberText, fontSize: 28, fontWeight: FontWeight.w500),
+                            style: TextStyle(color: AppColors.numberText, fontSize: 28, fontWeight: FontWeight.w500, height: 1.2),
                             decoration: InputDecoration(
                               border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(vertical: 4),
                               hintText: "Jumlah",
-                              hintStyle: TextStyle(color: AppColors.previewText.withOpacity(0.5), fontSize: 20),
+                              hintStyle: TextStyle(color: AppColors.previewText.withOpacity(0.5), fontSize: 20, height: 1.2),
                             ),
                           ),
                         ),
@@ -288,13 +303,19 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> with 
                                       style: TextStyle(fontSize: 32),
                                     ),
                                     SizedBox(width: 10),
-                                    ShaderMask(
-                                      shaderCallback: (bounds) => LinearGradient(
-                                        colors: [AppColors.accentGreen, AppColors.accentCyan],
-                                      ).createShader(bounds),
-                                      child: Text(
-                                        _result,
-                                        style: TextStyle(color: Colors.white, fontSize: 44, fontWeight: FontWeight.w700),
+                                    Padding(
+                                      padding: EdgeInsets.only(top: 8),
+                                      child: ShaderMask(
+                                        shaderCallback: (bounds) => LinearGradient(
+                                          colors: [AppColors.accentGreen, AppColors.accentCyan],
+                                        ).createShader(bounds),
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(horizontal: 8.0),
+                                          child: Text(
+                                            _result,
+                                            style: TextStyle(color: Colors.white, fontSize: 44, fontWeight: FontWeight.w700, height: 1.2, letterSpacing: 1.5),
+                                          ),
+                                        ),
                                       ),
                                     ),
                                     SizedBox(width: 8),

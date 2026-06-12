@@ -50,7 +50,7 @@ class _VaultScreenState extends State<VaultScreen> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.grey[900],
+          color: AppColors.surfaceVariant,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.numberText.withOpacity(0.12), width: 1),
         ),

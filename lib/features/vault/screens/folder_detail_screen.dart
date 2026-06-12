@@ -1,8 +1,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:video_player/video_player.dart';
+import 'package:open_file/open_file.dart';
 import '../../../core/theme/app_colors.dart';
 import '../services/vault_storage_service.dart';
 
@@ -26,6 +30,8 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
     with SingleTickerProviderStateMixin {
   List<VaultFileData> _files = [];
   bool _isLoading = true;
+  bool _isSelectionMode = false;
+  Set<int> _selectedIndices = {};
   late AnimationController _fabAnimController;
 
   @override
@@ -65,81 +71,222 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
       return;
     }
 
-    Uint8List? fileBytes;
-    String? fileName;
-    String mimeType = '';
-
-    if (widget.folderType == 'image') {
-      final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 80,
-      );
-      if (image != null) {
-        fileBytes = await image.readAsBytes();
-        fileName = image.name;
-        mimeType = 'image/${image.name.split('.').last}';
-      }
-    } else if (widget.folderType == 'video') {
-      final ImagePicker picker = ImagePicker();
-      final XFile? video = await picker.pickVideo(source: ImageSource.gallery);
-      if (video != null) {
-        fileBytes = await video.readAsBytes();
-        fileName = video.name;
-        mimeType = 'video/${video.name.split('.').last}';
-      }
-    } else if (widget.folderType == 'document') {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pdf', 'doc', 'docx', 'txt'],
-        withData: true,
-      );
-      if (result != null && result.files.single.bytes != null) {
-        fileBytes = result.files.single.bytes!;
-        fileName = result.files.single.name;
-        mimeType = 'application/${result.files.single.extension}';
-      }
-    } else if (widget.folderType == 'audio') {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.audio,
-        withData: true,
-      );
-      if (result != null && result.files.single.bytes != null) {
-        fileBytes = result.files.single.bytes!;
-        fileName = result.files.single.name;
-        mimeType = 'audio/${result.files.single.extension}';
-      }
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
     }
 
-    if (fileBytes != null && fileName != null) {
-      final base64 = base64Encode(fileBytes);
-      final vaultFile = VaultFileData(
-        name: fileName,
-        folderType: widget.folderType,
-        base64Data: base64,
-        mimeType: mimeType,
-        addedAt: DateTime.now(),
-      );
-      await VaultStorageService.addFile(vaultFile);
-      await _loadFiles();
+    List<VaultFileData> newFiles = [];
+    final int maxFileSizeInBytes = 15 * 1024 * 1024; // Limit 15 MB per file
+    int skippedFiles = 0;
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: AppColors.numberText, size: 20),
-                SizedBox(width: 8),
-                Expanded(child: Text('$fileName berhasil ditambahkan')),
+    try {
+      if (widget.folderType == 'image') {
+        final ImagePicker picker = ImagePicker();
+        final List<XFile> images = await picker.pickMultiImage(imageQuality: 80);
+        for (var image in images) {
+          final fileBytes = await image.readAsBytes();
+          if (fileBytes.lengthInBytes > maxFileSizeInBytes) {
+            skippedFiles++;
+            continue;
+          }
+          final mimeType = 'image/${image.name.split('.').last}';
+          newFiles.add(VaultFileData(
+            name: image.name,
+            folderType: widget.folderType,
+            base64Data: base64Encode(fileBytes),
+            mimeType: mimeType,
+            addedAt: DateTime.now(),
+          ));
+        }
+      } else if (widget.folderType == 'video') {
+        final ImagePicker picker = ImagePicker();
+        final XFile? video = await picker.pickVideo(source: ImageSource.gallery);
+        if (video != null) {
+          final fileBytes = await video.readAsBytes();
+          if (fileBytes.lengthInBytes > maxFileSizeInBytes) {
+            skippedFiles++;
+          } else {
+            newFiles.add(VaultFileData(
+              name: video.name,
+              folderType: widget.folderType,
+              base64Data: base64Encode(fileBytes),
+              mimeType: 'video/${video.name.split('.').last}',
+              addedAt: DateTime.now(),
+            ));
+          }
+        }
+      } else if (widget.folderType == 'document') {
+        FilePickerResult? result = await FilePicker.platform.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: ['pdf', 'doc', 'docx', 'txt'],
+          allowMultiple: true,
+          withData: true,
+        );
+        if (result != null) {
+          for (var file in result.files) {
+            if (file.bytes != null) {
+              if (file.bytes!.lengthInBytes > maxFileSizeInBytes) {
+                skippedFiles++;
+                continue;
+              }
+              newFiles.add(VaultFileData(
+                name: file.name,
+                folderType: widget.folderType,
+                base64Data: base64Encode(file.bytes!),
+                mimeType: 'application/${file.extension}',
+                addedAt: DateTime.now(),
+              ));
+            }
+          }
+        }
+      } else if (widget.folderType == 'audio') {
+        FilePickerResult? result = await FilePicker.platform.pickFiles(
+          type: FileType.audio,
+          allowMultiple: true,
+          withData: true,
+        );
+        if (result != null) {
+          for (var file in result.files) {
+            if (file.bytes != null) {
+              if (file.bytes!.lengthInBytes > maxFileSizeInBytes) {
+                skippedFiles++;
+                continue;
+              }
+              newFiles.add(VaultFileData(
+                name: file.name,
+                folderType: widget.folderType,
+                base64Data: base64Encode(file.bytes!),
+                mimeType: 'audio/${file.extension}',
+                addedAt: DateTime.now(),
+              ));
+            }
+          }
+        }
+      }
+
+      if (newFiles.isNotEmpty) {
+        for (var vaultFile in newFiles) {
+          await VaultStorageService.addFile(vaultFile);
+        }
+        await _loadFiles();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.check_circle, color: AppColors.numberText, size: 20),
+                  SizedBox(width: 8),
+                  Expanded(child: Text('${newFiles.length} file berhasil ditambahkan')),
+                ],
+              ),
+              backgroundColor: Colors.green.shade700,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+
+          if (skippedFiles > 0) {
+            _showSizeLimitWarning(skippedFiles);
+          }
+        }
+      } else {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          if (skippedFiles > 0) {
+            _showSizeLimitWarning(skippedFiles);
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error picking files: $e");
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showSizeLimitWarning(int count) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: EdgeInsets.symmetric(horizontal: 24),
+          child: Container(
+            padding: EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.numberText.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: AppColors.numberText.withOpacity(0.1), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 20,
+                  spreadRadius: -5,
+                )
               ],
             ),
-            backgroundColor: Colors.green.shade700,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orangeAccent.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent, size: 48),
+                ),
+                SizedBox(height: 24),
+                Text(
+                  'Batas Ukuran File',
+                  style: TextStyle(
+                    color: AppColors.numberText,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                SizedBox(height: 12),
+                Text(
+                  '$count file gagal ditambahkan karena ukurannya melebihi batas maksimal 15MB per file.\n\nSistem membatasi ukuran file untuk mencegah aplikasi memakan terlalu banyak memori.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.numberText.withOpacity(0.7),
+                    fontSize: 14,
+                    height: 1.5,
+                  ),
+                ),
+                SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orangeAccent,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Mengerti',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        );
-      }
-    }
+        ),
+      ),
+    );
   }
 
   Future<void> _deleteFile(int index) async {
@@ -147,7 +294,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Color(0xFF1C1C1E),
+        backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('Hapus File', style: TextStyle(color: AppColors.numberText)),
         content: Text(
@@ -184,6 +331,88 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
         ),
       ),
     );
+  }
+
+  void _viewVideo(VaultFileData file) {
+    final bytes = base64Decode(file.base64Data);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _FullScreenVideoViewer(
+          videoBytes: bytes,
+          fileName: file.name,
+        ),
+      ),
+    );
+  }
+
+  void _playAudio(VaultFileData file) {
+    final bytes = base64Decode(file.base64Data);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _FullScreenAudioViewer(
+          audioBytes: bytes,
+          fileName: file.name,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openDocument(VaultFileData file) async {
+    try {
+      final bytes = base64Decode(file.base64Data);
+      final tempDir = Directory.systemTemp;
+      final tempFile = File('${tempDir.path}/${file.name}');
+      await tempFile.writeAsBytes(bytes);
+      await OpenFile.open(tempFile.path);
+    } catch (e) {
+      debugPrint("Error opening document: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal membuka dokumen')),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteSelectedFiles() async {
+    if (_selectedIndices.isEmpty) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Hapus Terpilih', style: TextStyle(color: AppColors.numberText)),
+        content: Text(
+          'Yakin ingin menghapus ${_selectedIndices.length} file ini secara permanen?',
+          style: TextStyle(color: AppColors.numberText.withOpacity(0.7)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Batal', style: TextStyle(color: AppColors.numberText.withOpacity(0.54))),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Hapus', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final indicesList = _selectedIndices.toList()..sort((a, b) => b.compareTo(a));
+      for (final index in indicesList) {
+        await VaultStorageService.removeFile(widget.folderType, index);
+      }
+      setState(() {
+        _isSelectionMode = false;
+        _selectedIndices.clear();
+      });
+      await _loadFiles();
+    }
   }
 
   IconData _getIcon() {
@@ -227,6 +456,22 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
         actions: [
           if (widget.isVip && _files.isNotEmpty)
             Padding(
+              padding: EdgeInsets.only(right: 8),
+              child: IconButton(
+                icon: Icon(
+                  _isSelectionMode ? Icons.close : Icons.checklist,
+                  color: AppColors.numberText,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isSelectionMode = !_isSelectionMode;
+                    _selectedIndices.clear();
+                  });
+                },
+              ),
+            ),
+          if (widget.isVip && _files.isNotEmpty)
+            Padding(
               padding: EdgeInsets.only(right: 12),
               child: Center(
                 child: Container(
@@ -253,13 +498,19 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
               ? _buildEmptyState(accent)
               : _buildFileGrid(),
       // Only show FAB for VIP users
-      floatingActionButton: widget.isVip
+      floatingActionButton: (_isSelectionMode && _selectedIndices.isNotEmpty)
           ? FloatingActionButton(
-              onPressed: _addMedia,
-              backgroundColor: accent,
-              child: Icon(Icons.add, color: AppColors.background, size: 28),
+              onPressed: _deleteSelectedFiles,
+              backgroundColor: Colors.redAccent,
+              child: Icon(Icons.delete, color: Colors.white, size: 28),
             )
-          : null,
+          : (widget.isVip && !_isSelectionMode)
+              ? FloatingActionButton(
+                  onPressed: _addMedia,
+                  backgroundColor: accent,
+                  child: Icon(Icons.add, color: AppColors.background, size: 28),
+                )
+              : null,
     );
   }
 
@@ -338,8 +589,27 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
           final file = _files[index];
           final bytes = base64Decode(file.base64Data);
           return GestureDetector(
-            onTap: () => _viewImage(file),
-            onLongPress: widget.isVip ? () => _deleteFile(index) : null,
+            onTap: () {
+              if (_isSelectionMode) {
+                setState(() {
+                  if (_selectedIndices.contains(index)) {
+                    _selectedIndices.remove(index);
+                  } else {
+                    _selectedIndices.add(index);
+                  }
+                });
+              } else {
+                _viewImage(file);
+              }
+            },
+            onLongPress: widget.isVip ? () {
+              if (!_isSelectionMode) {
+                setState(() {
+                  _isSelectionMode = true;
+                  _selectedIndices.add(index);
+                });
+              }
+            } : null,
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -356,28 +626,28 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
                         bytes,
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(
-                          color: Colors.grey[900],
+                          color: AppColors.surfaceVariant,
                           child: Icon(Icons.broken_image, color: AppColors.numberText.withOpacity(0.38)),
                         ),
                       ),
                     ),
                   ),
                 ),
-                if (widget.isVip)
+                if (_isSelectionMode)
                   Positioned(
-                    top: 2,
-                    right: 2,
+                    top: 6,
+                    left: 6,
                     child: Container(
+                      width: 24,
+                      height: 24,
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
+                        color: _selectedIndices.contains(index) ? Colors.redAccent : Colors.black45,
                         shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.5),
                       ),
-                      child: IconButton(
-                        icon: Icon(Icons.delete, color: Colors.redAccent, size: 20),
-                        padding: EdgeInsets.all(4),
-                        constraints: BoxConstraints(),
-                        onPressed: () => _deleteFile(index),
-                      ),
+                      child: _selectedIndices.contains(index)
+                          ? Icon(Icons.check, color: Colors.white, size: 16)
+                          : null,
                     ),
                   ),
               ],
@@ -412,7 +682,7 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
             return await showDialog<bool>(
               context: context,
               builder: (ctx) => AlertDialog(
-                backgroundColor: Color(0xFF1C1C1E),
+                backgroundColor: AppColors.surface,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 title: Text('Hapus File', style: TextStyle(color: AppColors.numberText)),
                 content: Text(
@@ -439,11 +709,43 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
           child: Container(
             margin: EdgeInsets.only(bottom: 8),
             decoration: BoxDecoration(
-              color: Colors.grey[900],
+              color: AppColors.surfaceVariant,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.numberText.withOpacity(0.10)),
+              border: Border.all(
+                color: _isSelectionMode && _selectedIndices.contains(index)
+                    ? Colors.redAccent.withOpacity(0.5)
+                    : AppColors.numberText.withOpacity(0.10),
+                width: _isSelectionMode && _selectedIndices.contains(index) ? 1.5 : 1.0,
+              ),
             ),
             child: ListTile(
+              onTap: () {
+                if (_isSelectionMode) {
+                  setState(() {
+                    if (_selectedIndices.contains(index)) {
+                      _selectedIndices.remove(index);
+                    } else {
+                      _selectedIndices.add(index);
+                    }
+                  });
+                } else {
+                  if (widget.folderType == 'video') {
+                    _viewVideo(file);
+                  } else if (widget.folderType == 'audio') {
+                    _playAudio(file);
+                  } else if (widget.folderType == 'document') {
+                    _openDocument(file);
+                  }
+                }
+              },
+              onLongPress: widget.isVip ? () {
+                if (!_isSelectionMode) {
+                  setState(() {
+                    _isSelectionMode = true;
+                    _selectedIndices.add(index);
+                  });
+                }
+              } : null,
               contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               leading: Container(
                 width: 44,
@@ -464,12 +766,28 @@ class _FolderDetailScreenState extends State<FolderDetailScreen>
                 _formatDate(file.addedAt),
                 style: TextStyle(color: AppColors.numberText.withOpacity(0.4), fontSize: 12),
               ),
-              trailing: widget.isVip
-                  ? IconButton(
-                      icon: Icon(Icons.delete_outline, color: AppColors.numberText.withOpacity(0.38), size: 20),
-                      onPressed: () => _deleteFile(index),
+              trailing: _isSelectionMode
+                  ? Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: _selectedIndices.contains(index) ? Colors.redAccent : Colors.transparent,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: _selectedIndices.contains(index) ? Colors.redAccent : AppColors.numberText.withOpacity(0.3),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: _selectedIndices.contains(index)
+                          ? Icon(Icons.check, color: Colors.white, size: 16)
+                          : null,
                     )
-                  : null,
+                  : (widget.isVip
+                      ? IconButton(
+                          icon: Icon(Icons.delete_outline, color: AppColors.numberText.withOpacity(0.38), size: 20),
+                          onPressed: () => _deleteFile(index),
+                        )
+                      : null),
             ),
           ),
         );
@@ -518,6 +836,302 @@ class _FullScreenImageViewer extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Full screen video player
+class _FullScreenVideoViewer extends StatefulWidget {
+  final Uint8List videoBytes;
+  final String fileName;
+
+  const _FullScreenVideoViewer({
+    required this.videoBytes,
+    required this.fileName,
+  });
+
+  @override
+  State<_FullScreenVideoViewer> createState() => _FullScreenVideoViewerState();
+}
+
+class _FullScreenVideoViewerState extends State<_FullScreenVideoViewer> {
+  VideoPlayerController? _videoPlayerController;
+  bool _isInitialized = false;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initVideo();
+  }
+
+  Future<void> _initVideo() async {
+    try {
+      final tempDir = Directory.systemTemp;
+      final tempFile = File('${tempDir.path}/${widget.fileName}');
+      await tempFile.writeAsBytes(widget.videoBytes);
+
+      _videoPlayerController = VideoPlayerController.file(tempFile)
+        ..setLooping(false)
+        ..initialize().then((_) {
+          if (mounted) {
+            setState(() {
+              _isInitialized = true;
+            });
+            _videoPlayerController?.play();
+          }
+        });
+
+      _videoPlayerController?.addListener(() {
+        if (mounted) setState(() {});
+      });
+    } catch (e) {
+      debugPrint("Video init error: $e");
+      if (mounted) setState(() => _hasError = true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _videoPlayerController?.dispose();
+    super.dispose();
+  }
+
+  void _replayVideo() {
+    _videoPlayerController?.seekTo(Duration.zero);
+    _videoPlayerController?.play();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isFinished = _videoPlayerController?.value.isInitialized == true &&
+        _videoPlayerController?.value.position == _videoPlayerController?.value.duration;
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(widget.fileName, style: TextStyle(fontSize: 14)),
+      ),
+      body: Center(
+        child: _hasError
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
+                  SizedBox(height: 16),
+                  Text("Gagal memuat video", style: TextStyle(color: Colors.white)),
+                ],
+              )
+            : _isInitialized && _videoPlayerController != null
+                ? Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      AspectRatio(
+                        aspectRatio: _videoPlayerController!.value.aspectRatio,
+                        child: VideoPlayer(_videoPlayerController!),
+                      ),
+                      if (isFinished)
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            iconSize: 64,
+                            icon: Icon(Icons.replay, color: Colors.white),
+                            onPressed: _replayVideo,
+                          ),
+                        )
+                      else if (!_videoPlayerController!.value.isPlaying)
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            iconSize: 64,
+                            icon: Icon(Icons.play_arrow, color: Colors.white),
+                            onPressed: () {
+                              _videoPlayerController?.play();
+                            },
+                          ),
+                        ),
+                      // Pause button when playing (optional, can just tap to pause)
+                      if (_videoPlayerController!.value.isPlaying)
+                        Positioned.fill(
+                          child: GestureDetector(
+                            onTap: () {
+                              _videoPlayerController?.pause();
+                            },
+                            child: Container(color: Colors.transparent),
+                          ),
+                        ),
+                    ],
+                  )
+                : CircularProgressIndicator(color: Colors.purpleAccent),
+      ),
+    );
+  }
+}
+
+/// Full screen audio player
+class _FullScreenAudioViewer extends StatefulWidget {
+  final Uint8List audioBytes;
+  final String fileName;
+
+  const _FullScreenAudioViewer({
+    required this.audioBytes,
+    required this.fileName,
+  });
+
+  @override
+  State<_FullScreenAudioViewer> createState() => _FullScreenAudioViewerState();
+}
+
+class _FullScreenAudioViewerState extends State<_FullScreenAudioViewer> {
+  VideoPlayerController? _audioController;
+  bool _isInitialized = false;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initAudio();
+  }
+
+  Future<void> _initAudio() async {
+    try {
+      final tempDir = Directory.systemTemp;
+      final tempFile = File('${tempDir.path}/${widget.fileName}');
+      await tempFile.writeAsBytes(widget.audioBytes);
+
+      _audioController = VideoPlayerController.file(tempFile)
+        ..setLooping(false)
+        ..initialize().then((_) {
+          if (mounted) {
+            setState(() {
+              _isInitialized = true;
+            });
+            _audioController?.play();
+          }
+        });
+
+      _audioController?.addListener(() {
+        if (mounted) setState(() {});
+      });
+    } catch (e) {
+      debugPrint("Audio init error: $e");
+      if (mounted) setState(() => _hasError = true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _audioController?.dispose();
+    super.dispose();
+  }
+
+  void _replayAudio() {
+    _audioController?.seekTo(Duration.zero);
+    _audioController?.play();
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$twoDigitMinutes:$twoDigitSeconds";
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isFinished = _audioController?.value.isInitialized == true &&
+        _audioController?.value.position == _audioController?.value.duration;
+        
+    final position = _audioController?.value.position ?? Duration.zero;
+    final duration = _audioController?.value.duration ?? Duration.zero;
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(widget.fileName, style: TextStyle(fontSize: 14)),
+      ),
+      body: Center(
+        child: _hasError
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
+                  SizedBox(height: 16),
+                  Text("Gagal memuat audio", style: TextStyle(color: AppColors.numberText)),
+                ],
+              )
+            : _isInitialized && _audioController != null
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 150,
+                        height: 150,
+                        decoration: BoxDecoration(
+                          color: Colors.greenAccent.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.music_note, size: 80, color: Colors.greenAccent),
+                      ),
+                      SizedBox(height: 40),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(_formatDuration(position), style: TextStyle(color: AppColors.numberText)),
+                            Text(_formatDuration(duration), style: TextStyle(color: AppColors.numberText.withOpacity(0.7))),
+                          ],
+                        ),
+                      ),
+                      Slider(
+                        activeColor: Colors.greenAccent,
+                        inactiveColor: Colors.greenAccent.withOpacity(0.3),
+                        value: position.inSeconds.toDouble(),
+                        max: duration.inSeconds.toDouble(),
+                        onChanged: (value) {
+                          _audioController?.seekTo(Duration(seconds: value.toInt()));
+                        },
+                      ),
+                      SizedBox(height: 20),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.greenAccent.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          iconSize: 64,
+                          icon: Icon(
+                            isFinished 
+                                ? Icons.replay 
+                                : (_audioController!.value.isPlaying ? Icons.pause : Icons.play_arrow), 
+                            color: Colors.greenAccent
+                          ),
+                          onPressed: () {
+                            if (isFinished) {
+                              _replayAudio();
+                            } else if (_audioController!.value.isPlaying) {
+                              _audioController?.pause();
+                            } else {
+                              _audioController?.play();
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  )
+                : CircularProgressIndicator(color: Colors.greenAccent),
       ),
     );
   }
