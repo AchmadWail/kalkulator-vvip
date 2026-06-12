@@ -33,7 +33,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   void _payAndUnlock(BuildContext context) async {
     // Gunakan URL awal (langsung ke DANA QR)
-    final Uri danaUrl = Uri.parse("https://link.dana.id/minta?full_url=https://qr.dana.id/v1/281012092026061243909345");
+    final Uri danaUrl = Uri.parse("https://link.dana.id/minta?full_url=https://qr.dana.id/v1/281012092026061295127061");
 
     try {
       await launchUrl(danaUrl, mode: LaunchMode.externalApplication);
